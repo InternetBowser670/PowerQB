@@ -9,6 +9,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
+    "@fontsource-variable/playfair-display": "^5.2.8",
+    "@fontsource-variable/source-serif-4": "^5.2.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.8.0",
