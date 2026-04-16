@@ -8,11 +8,11 @@ const PatternPlaceholder = () => {
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 text-center">
           <Badge variant="secondary">PowerQB.com</Badge>
           <div className="max-w-3xl">
-            <h1 className="mb-6 text-4xl font-medium tracking-tight text-pretty text-foreground md:text-5xl lg:text-6xl">
-              A new method to practice quiz bowl.
+            <h1 className="mb-6 font-body text-4xl font-medium tracking-tight text-pretty text-foreground md:text-5xl lg:text-6xl">
+              A new method to practice <span className="font-heading italic">quiz bowl</span>.
             </h1>
             <p className="mx-auto max-w-2xl font-light tracking-tighter text-pretty text-muted-foreground md:text-lg lg:text-xl">
-              A configurable tossup and bonus practice tool.
+              A configurable tossup and bonus reader and analyzer.
             </p>
           </div>
 

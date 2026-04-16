@@ -8,7 +8,7 @@ export default function Page() {
   const { resolvedTheme } = useTheme()
   const isMounted = useIsMounted()
 
-  if (!isMounted()) return null
+  if (!isMounted || !resolvedTheme) return null
 
   return (
     <>

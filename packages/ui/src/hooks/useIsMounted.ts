@@ -1,15 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useSyncExternalStore } from "react";
 
-export function useIsMounted(): () => boolean {
-  const isMounted = useRef(false);
-
-  useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-
-  return () => isMounted.current;
+export function useIsMounted(): boolean {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 }
 
