@@ -26,6 +26,9 @@
     "packages/*"
   ],
   "dependencies": {
+    "@clerk/nextjs": "^7.2.2",
+    "mongodb": "^7.1.1",
+    "svix": "^1.90.0",
     "usehooks-ts": "^3.1.1"
   }
 }

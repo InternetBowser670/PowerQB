@@ -1,5 +1,6 @@
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
+import { Badge } from "@workspace/ui/components/badge"
+import { Button } from "@workspace/ui/components/button"
+import SplitText from "./SplitText"
 
 const PatternPlaceholder = () => {
   return (
@@ -9,7 +10,13 @@ const PatternPlaceholder = () => {
           <Badge variant="secondary">PowerQB.com</Badge>
           <div className="max-w-3xl">
             <h1 className="mb-6 font-body text-4xl font-medium tracking-tight text-pretty text-foreground md:text-5xl lg:text-6xl">
-              A new method to practice <span className="font-heading italic">quiz bowl</span>.
+              A new method to practice{" "}
+              <SplitText
+                text="quiz bowl."
+                delay={50}
+                tag="span"
+                className="font-heading italic overflow-visible! block!"
+              />
             </h1>
             <p className="mx-auto max-w-2xl font-light tracking-tighter text-pretty text-muted-foreground md:text-lg lg:text-xl">
               A configurable tossup and bonus reader and analyzer.
@@ -23,7 +30,7 @@ const PatternPlaceholder = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export { PatternPlaceholder };
+export { PatternPlaceholder }

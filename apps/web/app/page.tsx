@@ -3,6 +3,15 @@
 import { BackgroundPattern1 } from "@workspace/ui/components/background-pattern1"
 import { useTheme } from "next-themes"
 import { useIsMounted } from "@workspace/ui/hooks/useIsMounted"
+import {
+  ClerkLoading,
+  Show,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from "@clerk/nextjs"
+import { Button } from "@workspace/ui/components/button"
+import TextLogo from "@workspace/ui/components/branding/text-logo"
 
 export default function Page() {
   const { resolvedTheme } = useTheme()
@@ -12,6 +21,21 @@ export default function Page() {
 
   return (
     <>
+      <header className="absolute top-0 right-0 z-20 flex h-16 w-full items-center justify-between gap-4 p-4 bg-accent/10 border-b border-dashed">
+        <div className="flex gap-4"><TextLogo /></div>
+        <div className="flex gap-4">
+          <Show when="signed-out">
+            <SignInButton />
+            <SignUpButton>
+              <Button variant="default">Sign Up</Button>
+            </SignUpButton>
+          </Show>
+          <Show when="signed-in">
+            <UserButton />
+          </Show>
+          <ClerkLoading>Loading User...</ClerkLoading>
+        </div>
+      </header>
       <BackgroundPattern1
         className={resolvedTheme == "light" ? "fadeBottom" : "fadeBottomDark"}
       />

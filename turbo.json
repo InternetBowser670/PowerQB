@@ -20,5 +20,6 @@
       "cache": false,
       "persistent": true
     }
-  }
+  },
+  "globalEnv": ["SIGNING_SECRET", "MONGODB_URI", "MONGODB_DB_NAME"]
 }
