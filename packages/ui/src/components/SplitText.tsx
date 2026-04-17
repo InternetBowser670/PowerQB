@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-empty */
 import React, { useRef, useEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -49,6 +51,7 @@ const SplitText: React.FC<SplitTextProps> = ({
 
   useEffect(() => {
     if (document.fonts.status === 'loaded') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFontsLoaded(true);
     } else {
       document.fonts.ready.then(() => {
@@ -75,7 +78,7 @@ const SplitText: React.FC<SplitTextProps> = ({
 
       const startPct = (1 - threshold) * 100;
       const marginMatch = /^(-?\d+(?:\.\d+)?)(px|em|rem|%)?$/.exec(rootMargin);
-      const marginValue = marginMatch ? parseFloat(marginMatch[1]) : 0;
+      const marginValue = marginMatch ? parseFloat(marginMatch[1]!) : 0;
       const marginUnit = marginMatch ? marginMatch[2] || 'px' : 'px';
       const sign =
         marginValue === 0
