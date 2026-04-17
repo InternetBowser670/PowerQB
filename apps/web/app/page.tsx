@@ -12,6 +12,7 @@ import {
 } from "@clerk/nextjs"
 import { Button } from "@workspace/ui/components/button"
 import TextLogo from "@workspace/ui/components/branding/text-logo"
+import { Element } from "react-scroll"
 
 export default function Page() {
   const { resolvedTheme } = useTheme()
@@ -21,8 +22,10 @@ export default function Page() {
 
   return (
     <>
-      <header className="absolute top-0 right-0 z-20 flex h-16 w-full items-center justify-between gap-4 p-4 bg-accent/10 border-b border-dashed">
-        <div className="flex gap-4"><TextLogo /></div>
+      <header className="absolute top-0 right-0 z-20 flex h-16 w-full items-center justify-between gap-4 border-b border-dashed bg-accent/10 p-4">
+        <div className="flex gap-4">
+          <TextLogo />
+        </div>
         <div className="flex gap-4">
           <Show when="signed-out">
             <SignInButton />
@@ -39,11 +42,13 @@ export default function Page() {
       <BackgroundPattern1
         className={resolvedTheme == "light" ? "fadeBottom" : "fadeBottomDark"}
       />
-      <div className="flex min-h-svh w-full items-center justify-center p-6">
-        <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-          Coming soon...
+      <Element name="learnMore">
+        <div className="flex min-h-svh w-full items-center justify-center p-6">
+          <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
+            Coming soon...
+          </div>
         </div>
-      </div>
+      </Element>
     </>
   )
 }

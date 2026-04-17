@@ -1,6 +1,9 @@
+"use client"
+
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import SplitText from "./SplitText"
+import { Link as ScrollLink } from "react-scroll"
 
 const PatternPlaceholder = () => {
   return (
@@ -15,7 +18,7 @@ const PatternPlaceholder = () => {
                 text="quiz bowl."
                 delay={50}
                 tag="span"
-                className="font-heading italic overflow-visible! block!"
+                className="block! overflow-visible! font-heading italic"
               />
             </h1>
             <p className="mx-auto max-w-2xl font-light tracking-tighter text-pretty text-muted-foreground md:text-lg lg:text-xl">
@@ -25,7 +28,9 @@ const PatternPlaceholder = () => {
 
           <div className="flex items-center gap-2">
             <Button>Get Started</Button>
-            <Button variant="secondary">Learn More</Button>
+            <ScrollLink to="learnMore" smooth={true} duration={500}>
+              <Button variant="secondary">Learn More</Button>
+            </ScrollLink>
           </div>
         </div>
       </div>
