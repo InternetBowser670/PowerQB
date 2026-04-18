@@ -4,8 +4,11 @@ import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import SplitText from "./SplitText"
 import { Link as ScrollLink } from "react-scroll"
+import { useRouter } from "next/navigation"
 
 const PatternPlaceholder = () => {
+  const router = useRouter();
+
   return (
     <div className="relative z-10">
       <div className="container py-28 md:py-32">
@@ -27,7 +30,7 @@ const PatternPlaceholder = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button>Get Started</Button>
+            <Button onClick={() => router.push("/dashboard")}>Get Started</Button>
             <ScrollLink to="learnMore" smooth={true} duration={500}>
               <Button variant="secondary">Learn More</Button>
             </ScrollLink>

@@ -28,7 +28,7 @@ export default function RootLayout({
         geist.variable
       )}
     >
-      <body>
+      <body className="min-h-screen">
         <ClerkProvider>
           <ThemeProvider>{children}</ThemeProvider>
         </ClerkProvider>
