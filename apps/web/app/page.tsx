@@ -45,7 +45,8 @@ export default function Page() {
       <Element name="learnMore">
         <div className="flex min-h-svh w-full items-center justify-center p-6">
           <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-            Coming soon...
+            <h2>Coming soon...</h2>
+            <p>Feel free to make an account.</p>
           </div>
         </div>
       </Element>
