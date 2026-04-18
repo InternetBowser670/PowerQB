@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   ClerkLoading,
@@ -17,7 +17,7 @@ export default function TopbarLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const router = useRouter();
+  const router = useRouter()
 
   return (
     <div className="h-screen">
@@ -25,7 +25,7 @@ export default function TopbarLayout({
         <Link href="/" className="flex gap-4">
           <TextLogo />
         </Link>
-        <div className="flex gap-4">
+        <div className="flex items-center gap-4">
           <Show when="signed-out">
             <SignInButton />
             <SignUpButton>
@@ -34,7 +34,9 @@ export default function TopbarLayout({
           </Show>
           <Show when="signed-in">
             <Button onClick={() => router.push("/dashboard")}>Dashboard</Button>
-            <UserButton />
+            <div className="aspect-square! h-[28px]">
+              <UserButton />
+            </div>
           </Show>
           <ClerkLoading>Loading User...</ClerkLoading>
         </div>

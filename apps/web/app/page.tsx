@@ -29,7 +29,7 @@ export default function Page() {
         <Link href="/" className="flex gap-4">
           <TextLogo />
         </Link>
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
           <Show when="signed-out">
             <SignInButton />
             <SignUpButton>
@@ -41,7 +41,7 @@ export default function Page() {
               <Button onClick={() => router.push("/dashboard")}>
                 Dashboard
               </Button>
-              <div className="flex justify-center">
+              <div className="flex justify-center aspect-square! h-[28px]">
                 <UserButton />
               </div>
             </Show>
