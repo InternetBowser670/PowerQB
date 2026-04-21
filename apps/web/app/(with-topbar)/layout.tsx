@@ -8,7 +8,7 @@ export default function TopbarLayout({
   return (
     <div className="h-screen">
       <Topbar />
-      <div className="flex min-h-[calc(100svh-64px)] flex-col">{children}</div>
+      <div className="flex h-[calc(100svh-64px)] flex-col">{children}</div>
     </div>
   )
 }

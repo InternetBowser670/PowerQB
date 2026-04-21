@@ -17,10 +17,12 @@ export default function Topbar() {
   return (
     <>
       <header className="z-20 flex h-16 w-full items-center justify-between gap-4 border-b border-dashed bg-accent/10 p-4">
-        <div>
+        <div className="flex h-full items-center gap-4">
           <Link href="/" className="flex gap-4">
             <TextLogo />
           </Link>
+          <div className="h-[90%] border-r border-r-foreground" />
+          <Link href={"/singleplayer"}>Singleplayer</Link>
         </div>
 
         <div className="flex items-center gap-4">

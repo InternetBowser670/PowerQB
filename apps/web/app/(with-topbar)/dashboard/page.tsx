@@ -1,3 +1,5 @@
+import { Card } from "@workspace/ui/components/card"
+
 export const metadata = {
   title: "Dashboard"
 }
@@ -5,13 +7,13 @@ export const metadata = {
 export default function Page() {
   return (
     <div className="flex grow items-center justify-center">
-      <div className="max-w-2/3">
+      <Card className="max-w-2/3">
         <h1>This is your dashboard!</h1>
         <p>
           Soon you will be able to join rooms and view stats from here. For now,
-          hang tight!
+          hang tight.
         </p>
-      </div>
+      </Card>
     </div>
   )
 }
