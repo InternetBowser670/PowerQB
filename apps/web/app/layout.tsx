@@ -15,7 +15,7 @@ const fontMono = Geist_Mono({
 export const metadata = {
   title: {
     template: '%s | PowerQB',
-    default: 'PowerQB | A new method to practice quiz bowl',
+    default: 'PowerQB - A new method to practice quiz bowl',
   },
 };
 
