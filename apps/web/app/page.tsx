@@ -15,6 +15,8 @@ import TextLogo from "@workspace/ui/components/branding/text-logo"
 import { Element } from "react-scroll"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import EbbinghausChart from "@/components/ui/ebbinghaus-chart"
+import { Card } from "@workspace/ui/components/card"
 
 export default function Page() {
   const { resolvedTheme } = useTheme()
@@ -29,7 +31,7 @@ export default function Page() {
         <Link href="/" className="flex gap-4">
           <TextLogo />
         </Link>
-        <div className="flex gap-4 items-center">
+        <div className="flex items-center gap-4">
           <Show when="signed-out">
             <SignInButton />
             <SignUpButton>
@@ -41,7 +43,7 @@ export default function Page() {
               <Button onClick={() => router.push("/dashboard")}>
                 Dashboard
               </Button>
-              <div className="flex justify-center aspect-square! h-[28px]">
+              <div className="flex aspect-square! h-[28px] justify-center">
                 <UserButton />
               </div>
             </Show>
@@ -53,10 +55,18 @@ export default function Page() {
         className={resolvedTheme == "light" ? "fadeBottom" : "fadeBottomDark"}
       />
       <Element name="learnMore">
-        <div className="flex min-h-svh w-full items-center justify-center p-6">
-          <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-            <h2>Coming soon...</h2>
-            <p>Feel free to make an account.</p>
+        <div className="relative flex min-h-svh w-full items-center overflow-hidden p-6">
+          <div className="flex max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl min-w-0 flex-col gap-4 xl:gap-8 pl-[10%] text-sm leading-loose">
+            <h2 className="lg:text-6xl">Using AI to accelerate learning</h2>
+            <p className="lg:text-lg">
+              By the use of analysis and research, PowerQB is able to teach quiz
+              bowl topics like no other resource.
+            </p>
+          </div>
+          <div className="absolute top-1/2 left-1/2 -z-1 h-[60svh] w-[60svw] translate-x-1/10 -translate-y-1/2 -rotate-10 mask-[linear-gradient(to_right,black_10%,transparent_80%)] [-webkit-mask-image:linear-gradient(to_right,black_10%,transparent_80%)]">
+            <Card className="flex h-full w-full justify-center overflow-hidden border-2 p-2">
+              <EbbinghausChart />
+            </Card>
           </div>
         </div>
       </Element>
