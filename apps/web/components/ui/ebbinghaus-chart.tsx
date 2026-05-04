@@ -66,7 +66,7 @@ export default function EbbinghausChart() {
   ]
 
   return (
-    <ChartContainer ref={containerRef} className="h-full" config={chartConfig}>
+    <ChartContainer ref={containerRef} className="h-full overflow-visible!" config={chartConfig}>
       <ComposedChart
         margin={{
           left: 12,
