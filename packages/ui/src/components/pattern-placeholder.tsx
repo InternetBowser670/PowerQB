@@ -31,7 +31,7 @@ const PatternPlaceholder = () => {
 
           <div className="flex items-center gap-2">
             <Button onClick={() => router.push("/dashboard")}>Get Started</Button>
-            <ScrollLink to="learnMore" smooth={true} duration={500}>
+            <ScrollLink to="learnMore" offset={600} smooth={true} duration={500}>
               <Button variant="secondary">Learn More</Button>
             </ScrollLink>
           </div>

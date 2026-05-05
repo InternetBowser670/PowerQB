@@ -19,67 +19,111 @@ import EbbinghausChart from "@/components/ui/ebbinghaus-chart"
 import { Card } from "@workspace/ui/components/card"
 import GridPattern from "@workspace/ui/components/ui/grid-pattern"
 import { motion, useScroll, useTransform } from "motion/react"
-import { useEffect, useRef } from "react"
+import { useRef } from "react"
 
 function Section2() {
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ["start end", "end start"],
+    offset: ["start start", "end end"],
   })
 
-  const normalized = useTransform(scrollYProgress, [0.125, 0.5], [0, 1])
+  const { progress, foregroundY, backgroundY } = useTransform(
+    scrollYProgress,
+    [0, 0.2, 0.9, 1],
+    {
+      progress: ["0%", "0%", "100%", "100%"],
+      foregroundY: [600, 100, -100, -600],
+      backgroundY: [100, 50, -50, -100],
+    },
+    { clamp: false }
+  )
 
-  const { foregroundX, foregroundY, backgroundY } = useTransform(
-    normalized,
+  return (
+    <Element name="learnMore">
+      <div ref={ref} className="relative h-[300vh] w-full">
+        <div className="sticky top-0 flex h-svh w-full items-center overflow-hidden p-6">
+          <motion.div className="absolute top-0 left-0 z-20 h-[10px] w-full bg-card">
+            <motion.div
+              className="h-full bg-accent"
+              style={{ width: progress }}
+            ></motion.div>
+          </motion.div>
+          <motion.div
+            className="absolute inset-x-0 -top-[200px] h-[calc(100%+400px)]"
+            style={{ y: backgroundY }}
+          >
+            <GridPattern
+              className="h-full w-full opacity-20"
+              width={40}
+              height={40}
+            />
+          </motion.div>
+
+          <motion.div
+            style={{ y: foregroundY }}
+            className="z-2 flex max-w-xs min-w-0 flex-col gap-4 pl-[10%] text-sm leading-loose sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl xl:gap-8 2xl:max-w-2xl"
+          >
+            <h2 className="lg:text-6xl">Using AI to accelerate learning</h2>
+            <p className="lg:text-lg">
+              By the use of analysis and research, PowerQB is able to teach quiz
+              bowl topics like no other resource.
+            </p>
+          </motion.div>
+          <motion.div
+            style={{ y: foregroundY }}
+            className="absolute top-1/2 left-1/2 z-1 w-[60svw] translate-x-1/10 -translate-y-1/2 -rotate-10 overflow-visible! mask-[linear-gradient(to_right,black_10%,transparent_80%)] [-webkit-mask-image:linear-gradient(to_right,black_10%,transparent_80%)]"
+          >
+            <div className="overflow-visible">
+              <Card className="flex h-full w-full justify-center overflow-visible! border-2 bg-card p-2">
+                <EbbinghausChart />
+              </Card>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </Element>
+  )
+}
+
+function Section3() {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end end"],
+  })
+
+  const { foregroundY, backgroundY } = useTransform(
+    scrollYProgress,
     [0, 1],
     {
       foregroundY: [400, 0],
-      foregroundX: [-200, 0],
       backgroundY: [200, 0],
     },
     { clamp: false }
   )
 
-  useEffect(() => {
-    const unsubscribe = backgroundY.on("change", (v) => {
-      console.log(v)
-    })
-    return unsubscribe
-  }, [backgroundY])
-
   return (
-    <Element name="learnMore">
+    <Element name="footer">
       <div
         ref={ref}
-        className="relative flex min-h-svh w-full items-center overflow-hidden p-6"
+        className="min-h-50svh relative flex w-full items-center overflow-hidden p-0"
       >
         <motion.div
-          className="absolute inset-x-0 -top-[200px] h-[calc(100%+200px)]"
+          className="absolute inset-x-0 -top-[200px] h-[calc(100%+200px)] p-0"
           style={{ y: backgroundY }}
         >
           <GridPattern className="h-full w-full opacity-20" />
         </motion.div>
 
         <motion.div
-          style={{ x: foregroundX, y: foregroundY }}
-          className="z-2 flex max-w-xs min-w-0 flex-col gap-4 pl-[10%] text-sm leading-loose sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl xl:gap-8 2xl:max-w-2xl"
-        >
-          <h2 className="lg:text-6xl">Using AI to accelerate learning</h2>
-          <p className="lg:text-lg">
-            By the use of analysis and research, PowerQB is able to teach quiz
-            bowl topics like no other resource.
-          </p>
-        </motion.div>
-        <motion.div
           style={{ y: foregroundY }}
-          className="absolute top-1/2 left-1/2 z-1 w-[60svw] translate-x-1/10 -translate-y-1/2 -rotate-10 overflow-visible! mask-[linear-gradient(to_right,black_10%,transparent_80%)] [-webkit-mask-image:linear-gradient(to_right,black_10%,transparent_80%)]"
+          className="z-2 flex h-[600px] w-full flex-col items-center justify-center overflow-hidden border-t p-6 backdrop-blur-[1px]"
         >
-          <div className="overflow-visible">
-            <Card className="flex h-full w-full justify-center overflow-visible! border-2 bg-card p-2">
-              <EbbinghausChart />
-            </Card>
-          </div>
+          <h2 className="font-cursive opacity-10 flex flex-1 items-center justify-center text-center text-[20vw] leading-none italic">
+            PowerQB
+          </h2>
+          <p className="lg:text-lg opacity-10">InternetBowser, 2026</p>
         </motion.div>
       </div>
     </Element>
@@ -123,6 +167,7 @@ export default function Page() {
         className={resolvedTheme == "light" ? "fadeBottom" : "fadeBottomDark"}
       />
       <Section2 />
+      <Section3 />
     </>
   )
 }

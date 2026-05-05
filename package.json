@@ -1,6 +1,6 @@
 {
   "name": "PowerQB",
-  "version": "0.0.1", 
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "build": "turbo build",
@@ -28,6 +28,8 @@
   ],
   "dependencies": {
     "@clerk/nextjs": "^7.2.2",
+    "@fontsource-variable/ballet": "^5.2.8",
+    "@fontsource/mea-culpa": "^5.2.8",
     "mongodb": "^7.1.1",
     "react-scroll": "^1.9.3",
     "recharts": "^3.8.1",
