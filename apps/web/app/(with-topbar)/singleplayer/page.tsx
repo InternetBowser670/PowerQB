@@ -2,13 +2,14 @@
 
 import { Button } from "@workspace/ui/components/button"
 import { Pause, SkipForward, CogIcon, PlayIcon } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { isTypingTarget } from "@/lib/utils"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip"
+import { motion, AnimatePresence } from "motion/react"
 
 export default function Page() {
   // https://www.qbreader.org/tools/api-docs/schemas/#tossup
@@ -23,35 +24,58 @@ export default function Page() {
     { text: string; isBold: boolean }[]
   >([])
   const [isPaused, setIsPaused] = useState(false)
+  const [isFetchingTossup, setIsFetchingTossup] = useState(false)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [tossups, setTossups] = useState<any[]>([])
 
   const isFinished = TUH > 0 && displayedWords.length === allWords.length
 
-  async function fetchNewTossup() {
-    const res = await fetch(
-      "https://www.qbreader.org/api/random-tossup?powermarkOnly=true"
-    )
-    const json = await res.json()
-    const tu = json.tossups[0]
+  const [progressBarWidth, setProgressBarWidth] = useState("0%")
 
-    const parts = tu.question_sanitized.split("(*)")
-    const powerWords = parts[0]
-      .split(" ")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((w: any) => ({ text: w, isBold: true }))
-    const regularWords = parts[1]
-      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        parts[1].split(" ").map((w: any) => ({ text: w, isBold: false }))
-      : []
+  const fetchNewTossup = useCallback(async () => {
+    if (isFetchingTossup) return
 
-    setTossups((prev) => [...prev, tu])
-    setTUH((prev) => prev + 1)
-    setAllWords([...powerWords, { text: "(*)", isBold: true }, ...regularWords])
-    setDisplayedWords([])
-    setIsPaused(false)
-  }
+    setProgressBarWidth("0%")
+    setIsFetchingTossup(true)
+    setTimeout(() => setProgressBarWidth("90%"), 50)
+
+    try {
+      const res = await fetch(
+        "https://www.qbreader.org/api/random-tossup?powermarkOnly=true"
+      )
+      const json = await res.json()
+      const tu = json.tossups[0]
+
+      const parts = tu.question_sanitized.split("(*)")
+      const powerWords = parts[0]
+        .split(" ")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((w: any) => ({ text: w, isBold: true }))
+      const regularWords = parts[1]
+        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          parts[1].split(" ").map((w: any) => ({ text: w, isBold: false }))
+        : []
+
+      setTossups((prev) => [...prev, tu])
+      setTUH((prev) => prev + 1)
+      setAllWords([
+        ...powerWords,
+        { text: "(*)", isBold: true },
+        ...regularWords,
+      ])
+      setDisplayedWords([])
+      setIsPaused(false)
+      setProgressBarWidth("100%")
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setProgressBarWidth("100%")
+      setTimeout(() => {
+        setIsFetchingTossup(false)
+      }, 300)
+    }
+  }, [isFetchingTossup])
 
   useEffect(() => {
     if (TUH > 0 && displayedWords.length < allWords.length && !isPaused) {
@@ -99,7 +123,7 @@ export default function Page() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown)
     }
-  }, [setIsPaused, setDisplayedWords, allWords])
+  }, [setIsPaused, setDisplayedWords, allWords, fetchNewTossup])
 
   return (
     <>
@@ -110,8 +134,8 @@ export default function Page() {
               ? `Tossup ${TUH} | ${tossups[TUH - 1]!.set.name} Packet ${tossups[TUH - 1]!.packet.number} Question ${tossups[TUH - 1]!.number}`
               : "Not started"}
           </h4>
-          <hr />
-          <div>
+          <hr className="mb-0" />
+          <div className="relative grow pt-[15px]">
             <p className="text-lg leading-relaxed">
               {TUH === 0
                 ? 'Press "Start" to begin'
@@ -123,6 +147,28 @@ export default function Page() {
             </p>
           </div>
         </div>
+        <AnimatePresence>
+          {isFetchingTossup && (
+            <div className="pointer-events-none absolute bottom-0 left-0 h-[15px] w-full overflow-hidden">
+              <motion.div
+                className="h-full bg-primary"
+                initial={{ y: 15, width: "0%" }}
+                animate={{
+                  y: 0,
+                  width: progressBarWidth,
+                }}
+                exit={{ y: 15 }}
+                transition={{
+                  y: { type: "spring", stiffness: 300, damping: 30 },
+                  width: {
+                    duration: progressBarWidth === "100%" ? 0.2 : 5,
+                    ease: "easeOut",
+                  },
+                }}
+              />
+            </div>
+          )}
+        </AnimatePresence>
         <div className="m-4 flex justify-between p-4">
           <div className="flex gap-4">
             <Tooltip>
