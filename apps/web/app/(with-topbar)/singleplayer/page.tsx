@@ -3,6 +3,12 @@
 import { Button } from "@workspace/ui/components/button"
 import { Pause, SkipForward, CogIcon, PlayIcon } from "lucide-react"
 import { useEffect, useState } from "react"
+import { isTypingTarget } from "@/lib/utils"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@workspace/ui/components/tooltip"
 
 export default function Page() {
   // https://www.qbreader.org/tools/api-docs/schemas/#tossup
@@ -61,6 +67,40 @@ export default function Page() {
     }
   }, [TUH, displayedWords.length, allWords, isPaused])
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.repeat) {
+        return
+      }
+
+      if (event.metaKey || event.ctrlKey || event.altKey) {
+        return
+      }
+
+      if (isTypingTarget(event.target)) {
+        return
+      }
+
+      if (event.key.toLowerCase() == "p") {
+        setIsPaused((prev) => !prev)
+      }
+
+      if (event.key.toLowerCase() == "s") {
+        setDisplayedWords(allWords)
+      }
+
+      if (event.key.toLowerCase() == "n") {
+        fetchNewTossup()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [setIsPaused, setDisplayedWords, allWords])
+
   return (
     <>
       <div className="flex h-full w-full flex-col justify-between">
@@ -83,26 +123,66 @@ export default function Page() {
             </p>
           </div>
         </div>
-        <div className="m-4 flex gap-4 p-4">
-          <Button
-            onClick={() => {
-              if (TUH === 0 || isPaused || isFinished) fetchNewTossup()
-            }}
-          >
-            {TUH === 0 ? "Start" : "Next"}
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => setDisplayedWords(allWords)}
-          >
-            <SkipForward />
-          </Button>
-          <Button variant="secondary" onClick={() => setIsPaused(!isPaused)}>
-            {isPaused ? <PlayIcon /> : <Pause />}
-          </Button>
-          <Button variant={"secondary"}>
-            <CogIcon />
-          </Button>
+        <div className="m-4 flex justify-between p-4">
+          <div className="flex gap-4">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => {
+                    if (TUH === 0 || isPaused || isFinished) fetchNewTossup()
+                  }}
+                >
+                  {TUH === 0 ? "Start" : "Next"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Shortcut: </p>
+                <kbd>n</kbd>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="secondary"
+                  onClick={() => setDisplayedWords(allWords)}
+                >
+                  <SkipForward />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Shortcut: </p>
+                <kbd>s</kbd>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="secondary"
+                  onClick={() => setIsPaused(!isPaused)}
+                >
+                  {isPaused ? <PlayIcon /> : <Pause />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Shortcut: </p>
+                <kbd>p</kbd>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant={"secondary"}>
+                  <CogIcon />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Shortcut: </p>
+                <kbd>e</kbd>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <div>
+            <Button>Buzz</Button>
+          </div>
         </div>
       </div>
     </>

@@ -4,7 +4,8 @@ import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@workspace/ui/lib/utils"
 import { ClerkProvider } from "@clerk/nextjs"
-import '@fontsource/mea-culpa';
+import "@fontsource/mea-culpa"
+import { TooltipProvider } from "@workspace/ui/components/tooltip"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -15,10 +16,10 @@ const fontMono = Geist_Mono({
 
 export const metadata = {
   title: {
-    template: '%s | PowerQB',
-    default: 'PowerQB - A new method to practice quiz bowl',
+    template: "%s | PowerQB",
+    default: "PowerQB - A new method to practice quiz bowl",
   },
-};
+}
 
 export default function RootLayout({
   children,
@@ -38,7 +39,9 @@ export default function RootLayout({
     >
       <body className="min-h-screen">
         <ClerkProvider>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            <TooltipProvider>{children}</TooltipProvider>
+          </ThemeProvider>
         </ClerkProvider>
       </body>
     </html>
