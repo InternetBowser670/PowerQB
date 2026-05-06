@@ -1,8 +1,8 @@
 "use client"
 
 import { Button } from "@workspace/ui/components/button"
-import { Pause, SkipForward, CogIcon } from "lucide-react"
-import { useState } from "react"
+import { Pause, SkipForward, CogIcon, PlayIcon } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export default function Page() {
   // https://www.qbreader.org/tools/api-docs/schemas/#tossup
@@ -10,33 +10,56 @@ export default function Page() {
   // standard abbv. for tossups heard
   // 0 = not started, inclusive
   const [TUH, setTUH] = useState(0)
-  // not yet const [activeTossup, setActiveTossup] = useState(0)
+  const [allWords, setAllWords] = useState<{ text: string; isBold: boolean }[]>(
+    []
+  )
+  const [displayedWords, setDisplayedWords] = useState<
+    { text: string; isBold: boolean }[]
+  >([])
+  const [isPaused, setIsPaused] = useState(false)
 
-  const tossups = [
-    {
-      title: "2023 Politics & History with a side of Memes (5)",
-      qText: (
-        <>
-          <span className="font-bold">
-            EricVanWilderman and Juniper are YouTubers who primarily make
-            content on this game. Easter eggs within this game include the
-            ‘Vault of Secrets’ and a hidden level known as ‘The Challenge’. The
-            2.0 Update to this game added moving objects and a new robot
-            gamemode. Robert Topala is the sole developer of this game, although
-            he typically goes under his online username ‘RobTop’. Difficulties
-            (*)
-          </span>{" "}
-          in this game include Easy, Normal, Insane, and Demon levels. Levels in
-          this game include ‘Back on Track’ and ‘Stereo Madness’. FTP, name this
-          game, the most popular 2d side-scrolling platformer on the App Store.
-        </>
-      ),
-    },
-  ]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [tossups, setTossups] = useState<any[]>([])
 
-  function startGame() {
-    setTUH(1)
+  const isFinished = TUH > 0 && displayedWords.length === allWords.length
+
+  async function fetchNewTossup() {
+    const res = await fetch(
+      "https://www.qbreader.org/api/random-tossup?powermarkOnly=true"
+    )
+    const json = await res.json()
+    const tu = json.tossups[0]
+
+    const parts = tu.question_sanitized.split("(*)")
+    const powerWords = parts[0]
+      .split(" ")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((w: any) => ({ text: w, isBold: true }))
+    const regularWords = parts[1]
+      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        parts[1].split(" ").map((w: any) => ({ text: w, isBold: false }))
+      : []
+
+    setTossups((prev) => [...prev, tu])
+    setTUH((prev) => prev + 1)
+    setAllWords([...powerWords, { text: "(*)", isBold: true }, ...regularWords])
+    setDisplayedWords([])
+    setIsPaused(false)
   }
+
+  useEffect(() => {
+    if (TUH > 0 && displayedWords.length < allWords.length && !isPaused) {
+      const intervalId = setInterval(() => {
+        setDisplayedWords((prev) => {
+          const nextWord = allWords[prev.length]
+          if (!nextWord) return prev
+          return [...prev, nextWord]
+        })
+      }, 100)
+
+      return () => clearInterval(intervalId)
+    }
+  }, [TUH, displayedWords.length, allWords, isPaused])
 
   return (
     <>
@@ -44,21 +67,38 @@ export default function Page() {
         <div className="flex h-full w-full flex-col gap-4 p-4">
           <h4>
             {TUH !== 0
-              ? `Tossup ${TUH} | ${tossups[TUH - 1]!.title}`
+              ? `Tossup ${TUH} | ${tossups[TUH - 1]!.set.name} Packet ${tossups[TUH - 1]!.packet.number} Question ${tossups[TUH - 1]!.number}`
               : "Not started"}
           </h4>
           <hr />
           <div>
-            <p>{TUH === 0 ? 'Press "Start" to begin' : tossups[TUH - 1]!.qText}</p>
+            <p className="text-lg leading-relaxed">
+              {TUH === 0
+                ? 'Press "Start" to begin'
+                : displayedWords.map((word, i) => (
+                    <span key={i} className={word.isBold ? "font-bold" : ""}>
+                      {word.text}{" "}
+                    </span>
+                  ))}
+            </p>
           </div>
         </div>
         <div className="m-4 flex gap-4 p-4">
-          <Button onClick={startGame}>{TUH === 0 ? "Start" : "Next"}</Button>
-          <Button variant={"secondary"}>
+          <Button
+            onClick={() => {
+              if (TUH === 0 || isPaused || isFinished) fetchNewTossup()
+            }}
+          >
+            {TUH === 0 ? "Start" : "Next"}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => setDisplayedWords(allWords)}
+          >
             <SkipForward />
           </Button>
-          <Button variant={"secondary"}>
-            <Pause />
+          <Button variant="secondary" onClick={() => setIsPaused(!isPaused)}>
+            {isPaused ? <PlayIcon /> : <Pause />}
           </Button>
           <Button variant={"secondary"}>
             <CogIcon />
