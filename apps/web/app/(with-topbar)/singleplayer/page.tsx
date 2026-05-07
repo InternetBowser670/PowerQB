@@ -165,6 +165,7 @@ export default function Page() {
 
       if (event.key.toLowerCase() == "s") {
         setDisplayedWords(allWords)
+        setTossupAnswered(true)
       }
 
       if (event.key.toLowerCase() == "n") {
@@ -254,7 +255,7 @@ export default function Page() {
             ))}
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 h-[15px] w-full overflow-hidden z-10">
+        <div className="absolute bottom-0 left-0 z-10 h-[15px] w-full overflow-hidden">
           <AnimatePresence>
             {isFetchingTossup && (
               <motion.div
