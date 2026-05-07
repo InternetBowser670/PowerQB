@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip"
 import { motion, AnimatePresence } from "motion/react"
+import { v4 } from "uuid"
 
 export default function Page() {
   // https://www.qbreader.org/tools/api-docs/schemas/#tossup
@@ -25,6 +26,7 @@ export default function Page() {
   >([])
   const [isPaused, setIsPaused] = useState(false)
   const [isFetchingTossup, setIsFetchingTossup] = useState(false)
+  const [loadingBarKey, setLoadingBarKey] = useState(v4())
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [tossups, setTossups] = useState<any[]>([])
@@ -37,8 +39,9 @@ export default function Page() {
     if (isFetchingTossup) return
 
     setProgressBarWidth("0%")
+    setLoadingBarKey(v4())
     setIsFetchingTossup(true)
-    setTimeout(() => setProgressBarWidth("90%"), 50)
+    setTimeout(() => setProgressBarWidth("90%"), 100)
 
     try {
       const res = await fetch(
@@ -73,7 +76,7 @@ export default function Page() {
       setProgressBarWidth("100%")
       setTimeout(() => {
         setIsFetchingTossup(false)
-      }, 300)
+      }, 1)
     }
   }, [isFetchingTossup])
 
@@ -147,28 +150,34 @@ export default function Page() {
             </p>
           </div>
         </div>
-        <AnimatePresence>
-          {isFetchingTossup && (
-            <div className="pointer-events-none absolute bottom-0 left-0 h-[15px] w-full overflow-hidden">
+        <div className="absolute bottom-0 left-0 h-[15px] w-full overflow-hidden">
+          <AnimatePresence>
+            {isFetchingTossup && (
               <motion.div
+                key={loadingBarKey + " tossup-progress"}
                 className="h-full bg-primary"
                 initial={{ y: 15, width: "0%" }}
                 animate={{
                   y: 0,
                   width: progressBarWidth,
                 }}
-                exit={{ y: 15 }}
-                transition={{
-                  y: { type: "spring", stiffness: 300, damping: 30 },
-                  width: {
-                    duration: progressBarWidth === "100%" ? 0.2 : 5,
-                    ease: "easeOut",
+                exit={{
+                  y: 15,
+                  transition: {
+                    y: { type: "spring", stiffness: 300, damping: 30 },
                   },
                 }}
+                transition={{
+                  width: {
+                    duration: progressBarWidth === "100%" ? 0.3 : 5,
+                    ease: "easeOut",
+                  },
+                  y: { type: "spring", stiffness: 300, damping: 30 },
+                }}
               />
-            </div>
-          )}
-        </AnimatePresence>
+            )}
+          </AnimatePresence>
+        </div>
         <div className="m-4 flex justify-between p-4">
           <div className="flex gap-4">
             <Tooltip>
