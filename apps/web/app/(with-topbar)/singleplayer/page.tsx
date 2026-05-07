@@ -139,7 +139,7 @@ export default function Page() {
           if (!nextWord) return prev
           return [...prev, nextWord]
         })
-      }, 100)
+      }, 140)
 
       return () => clearInterval(intervalId)
     }
@@ -186,9 +186,7 @@ export default function Page() {
   return (
     <>
       <div className="flex h-full w-full flex-col justify-between">
-        <div
-          className="flex h-full w-full flex-col gap-4 overflow-y-scroll! p-4"
-        >
+        <div className="flex h-full w-full flex-col gap-4 overflow-y-scroll! p-4">
           <h4>
             {TUH !== 0
               ? `Tossup ${TUH} | ${tossups[TUH - 1]!.set.name} Packet ${tossups[TUH - 1]!.packet.number} Question ${tossups[TUH - 1]!.number}`
@@ -256,7 +254,7 @@ export default function Page() {
             ))}
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 h-[15px] w-full overflow-hidden">
+        <div className="absolute bottom-0 left-0 h-[15px] w-full overflow-hidden z-10">
           <AnimatePresence>
             {isFetchingTossup && (
               <motion.div
@@ -284,8 +282,8 @@ export default function Page() {
             )}
           </AnimatePresence>
         </div>
-        <div className="absolute bottom-0 w-full">
-          <div className="flex w-full justify-between p-4">
+        <div className="absolute bottom-0 w-full border-t-2 border-dashed border-foreground backdrop-blur-md">
+          <div className="flex w-full justify-between p-6">
             <div className="flex gap-4">
               <Tooltip>
                 <TooltipTrigger asChild>
