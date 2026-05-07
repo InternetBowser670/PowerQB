@@ -32,6 +32,7 @@
     "@fontsource/mea-culpa": "^5.2.8",
     "clsx": "^2.1.1",
     "mongodb": "^7.1.1",
+    "react-hook-form": "^7.75.0",
     "react-scroll": "^1.9.3",
     "recharts": "^3.8.1",
     "svix": "^1.90.0",

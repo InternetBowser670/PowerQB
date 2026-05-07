@@ -11,6 +11,14 @@ import {
 } from "@workspace/ui/components/tooltip"
 import { motion, AnimatePresence } from "motion/react"
 import { v4 } from "uuid"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@workspace/ui/components/input-group"
+import { useForm } from "react-hook-form"
+import { Card } from "@workspace/ui/components/card"
 
 export default function Page() {
   // https://www.qbreader.org/tools/api-docs/schemas/#tossup
@@ -31,13 +39,33 @@ export default function Page() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [tossups, setTossups] = useState<any[]>([])
 
+  const [progressBarWidth, setProgressBarWidth] = useState("0%")
+  const [isAnswering, setIsAnswering] = useState(false)
+  const [tossupAnswered, setTossupAnswered] = useState(false)
+
   const isFinished = TUH > 0 && displayedWords.length === allWords.length
 
-  const [progressBarWidth, setProgressBarWidth] = useState("0%")
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function toReversed(arr: any[]) {
+    return [...arr].reverse()
+  }
+
+  const answerInputForm = useForm({
+    defaultValues: { answer: "" },
+  })
+
+  function onSubmitAnswer(values: { answer: string }) {
+    console.log("Submitted ans:", values.answer)
+
+    setIsAnswering(false)
+    setTossupAnswered(true)
+    setDisplayedWords(allWords)
+  }
 
   const fetchNewTossup = useCallback(async () => {
     if (isFetchingTossup) return
 
+    setIsAnswering(false)
     setProgressBarWidth("0%")
     setLoadingBarKey(v4())
     setIsFetchingTossup(true)
@@ -61,6 +89,7 @@ export default function Page() {
         : []
 
       setTossups((prev) => [...prev, tu])
+      setTossupAnswered(false)
       setTUH((prev) => prev + 1)
       setAllWords([
         ...powerWords,
@@ -80,10 +109,32 @@ export default function Page() {
     }
   }, [isFetchingTossup])
 
+  const buzz = useCallback(() => {
+    if (TUH == 0 || displayedWords.length == 0 || tossupAnswered || isAnswering)
+      return
+    setIsAnswering(true)
+    setIsPaused(true)
+  }, [TUH, displayedWords.length, isAnswering, tossupAnswered])
+
   useEffect(() => {
     if (TUH > 0 && displayedWords.length < allWords.length && !isPaused) {
       const intervalId = setInterval(() => {
         setDisplayedWords((prev) => {
+          if (prev.length + 1 === allWords.length) {
+            setTossups((prev) => {
+              if (prev.length === 0) return prev
+
+              const newState = [...prev]
+              const lastIndex = newState.length - 1
+
+              newState[lastIndex] = {
+                ...newState[lastIndex],
+                doneReading: true,
+              }
+
+              return newState
+            })
+          }
           const nextWord = allWords[prev.length]
           if (!nextWord) return prev
           return [...prev, nextWord]
@@ -119,6 +170,10 @@ export default function Page() {
       if (event.key.toLowerCase() == "n") {
         fetchNewTossup()
       }
+
+      if (event.key.toLowerCase() == " ") {
+        buzz()
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown)
@@ -126,28 +181,79 @@ export default function Page() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown)
     }
-  }, [setIsPaused, setDisplayedWords, allWords, fetchNewTossup])
+  }, [setIsPaused, setDisplayedWords, allWords, fetchNewTossup, buzz])
 
   return (
     <>
       <div className="flex h-full w-full flex-col justify-between">
-        <div className="flex h-full w-full flex-col gap-4 p-4">
+        <div
+          className="flex h-full w-full flex-col gap-4 overflow-y-scroll! p-4"
+        >
           <h4>
             {TUH !== 0
               ? `Tossup ${TUH} | ${tossups[TUH - 1]!.set.name} Packet ${tossups[TUH - 1]!.packet.number} Question ${tossups[TUH - 1]!.number}`
               : "Not started"}
           </h4>
           <hr className="mb-0" />
-          <div className="relative grow pt-[15px]">
-            <p className="text-lg leading-relaxed">
-              {TUH === 0
-                ? 'Press "Start" to begin'
-                : displayedWords.map((word, i) => (
-                    <span key={i} className={word.isBold ? "font-bold" : ""}>
-                      {word.text}{" "}
-                    </span>
-                  ))}
-            </p>
+          <AnimatePresence>
+            {isAnswering && (
+              <form onSubmit={answerInputForm.handleSubmit(onSubmitAnswer)}>
+                <InputGroup>
+                  <InputGroupInput
+                    autoFocus
+                    placeholder="Answer"
+                    {...answerInputForm.register("answer")}
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupButton
+                      className="p-2"
+                      type="submit"
+                      variant="secondary"
+                    >
+                      Submit
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                </InputGroup>
+              </form>
+            )}
+          </AnimatePresence>
+          <div className="relative flex grow flex-col gap-4 pt-[15px]">
+            {toReversed(tossups).map((tu, i) => (
+              <Card key={i}>
+                <p className="text-lg leading-relaxed">
+                  {TUH === 0 ? (
+                    'Press "Start" to begin'
+                  ) : i == 0 ? (
+                    <>
+                      {displayedWords.map((word, i) => (
+                        <>
+                          <span
+                            key={i}
+                            className={word.isBold ? "font-bold" : ""}
+                          >
+                            {word.text}{" "}
+                          </span>
+                        </>
+                      ))}
+                      {tossupAnswered && (
+                        <>
+                          <br />
+                          <br />
+                          <p>
+                            Answer:{" "}
+                            <span
+                              dangerouslySetInnerHTML={{ __html: tu.answer }}
+                            />
+                          </p>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <span dangerouslySetInnerHTML={{ __html: tu.answer }} />
+                  )}
+                </p>
+              </Card>
+            ))}
           </div>
         </div>
         <div className="absolute bottom-0 left-0 h-[15px] w-full overflow-hidden">
@@ -178,65 +284,67 @@ export default function Page() {
             )}
           </AnimatePresence>
         </div>
-        <div className="m-4 flex justify-between p-4">
-          <div className="flex gap-4">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={() => {
-                    if (TUH === 0 || isPaused || isFinished) fetchNewTossup()
-                  }}
-                >
-                  {TUH === 0 ? "Start" : "Next"}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Shortcut: </p>
-                <kbd>n</kbd>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="secondary"
-                  onClick={() => setDisplayedWords(allWords)}
-                >
-                  <SkipForward />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Shortcut: </p>
-                <kbd>s</kbd>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="secondary"
-                  onClick={() => setIsPaused(!isPaused)}
-                >
-                  {isPaused ? <PlayIcon /> : <Pause />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Shortcut: </p>
-                <kbd>p</kbd>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant={"secondary"}>
-                  <CogIcon />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Shortcut: </p>
-                <kbd>e</kbd>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <div>
-            <Button>Buzz</Button>
+        <div className="absolute bottom-0 w-full">
+          <div className="flex w-full justify-between p-4">
+            <div className="flex gap-4">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => {
+                      if (TUH === 0 || isPaused || isFinished) fetchNewTossup()
+                    }}
+                  >
+                    {TUH === 0 ? "Start" : "Next"}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Shortcut: </p>
+                  <kbd>n</kbd>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setDisplayedWords(allWords)}
+                  >
+                    <SkipForward />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Shortcut: </p>
+                  <kbd>s</kbd>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setIsPaused(!isPaused)}
+                  >
+                    {isPaused ? <PlayIcon /> : <Pause />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Shortcut: </p>
+                  <kbd>p</kbd>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant={"secondary"}>
+                    <CogIcon />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Shortcut: </p>
+                  <kbd>e</kbd>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <div>
+              <Button onClick={buzz}>Buzz</Button>
+            </div>
           </div>
         </div>
       </div>
