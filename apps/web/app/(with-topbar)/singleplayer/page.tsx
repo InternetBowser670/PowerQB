@@ -283,7 +283,7 @@ export default function Page() {
             )}
           </AnimatePresence>
         </div>
-        <div className="absolute bottom-0 w-full border-t-2 border-dashed border-foreground backdrop-blur-md">
+        <div className=" bottom-0 w-full border-t-2 border-dashed border-foreground backdrop-blur-md">
           <div className="flex w-full justify-between p-6">
             <div className="flex gap-4">
               <Tooltip>
