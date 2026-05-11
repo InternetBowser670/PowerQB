@@ -19,6 +19,7 @@ import {
 } from "@workspace/ui/components/input-group"
 import { useForm } from "react-hook-form"
 import { Card } from "@workspace/ui/components/card"
+import checkAnswer from "qb-answer-checker"
 
 export default function Page() {
   // https://www.qbreader.org/tools/api-docs/schemas/#tossup
@@ -43,6 +44,8 @@ export default function Page() {
   const [isAnswering, setIsAnswering] = useState(false)
   const [tossupAnswered, setTossupAnswered] = useState(false)
 
+  const [score, setScore] = useState(0)
+
   const isFinished = TUH > 0 && displayedWords.length === allWords.length
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -55,7 +58,21 @@ export default function Page() {
   })
 
   function onSubmitAnswer(values: { answer: string }) {
-    console.log("Submitted ans:", values.answer)
+    const check = checkAnswer(toReversed(tossups)[0].answer, values.answer)
+
+    answerInputForm.reset()
+
+    if (check.directive == "accept") {
+      if (toReversed(displayedWords)[0].isBold == true) {
+        setScore((prev) => prev + 15)
+      } else {
+        setScore((prev) => prev + 10)
+      }
+    } else if (check.directive == "reject") {
+      if (!isFinished) {
+        setScore((prev) => prev - 5)
+      }
+    }
 
     setIsAnswering(false)
     setTossupAnswered(true)
@@ -112,6 +129,7 @@ export default function Page() {
   const buzz = useCallback(() => {
     if (TUH == 0 || displayedWords.length == 0 || tossupAnswered || isAnswering)
       return
+
     setIsAnswering(true)
     setIsPaused(true)
   }, [TUH, displayedWords.length, isAnswering, tossupAnswered])
@@ -188,11 +206,18 @@ export default function Page() {
     <>
       <div className="flex h-full w-full flex-col justify-between">
         <div className="flex h-full w-full flex-col gap-4 overflow-y-scroll! p-4">
-          <h4>
-            {TUH !== 0
-              ? `Tossup ${TUH} | ${tossups[TUH - 1]!.set.name} Packet ${tossups[TUH - 1]!.packet.number} Question ${tossups[TUH - 1]!.number}`
-              : "Not started"}
-          </h4>
+          <div className="flex items-center justify-between">
+            <h4>
+              {TUH !== 0
+                ? `Tossup ${TUH} | ${tossups[TUH - 1]!.set.name} Packet ${tossups[TUH - 1]!.packet.number} Question ${tossups[TUH - 1]!.number}`
+                : "Not started"}
+            </h4>
+            <div>
+              <h3 className="text-sm">
+                <span className="mr-1 text-4xl">{score}</span>Points
+              </h3>
+            </div>
+          </div>
           <hr className="mb-0" />
           <AnimatePresence>
             {isAnswering && (
@@ -217,40 +242,34 @@ export default function Page() {
             )}
           </AnimatePresence>
           <div className="relative flex grow flex-col gap-4 pt-[15px]">
+            {TUH == 0 && <p>Press &quot;Start&quot; to begin</p>}
             {toReversed(tossups).map((tu, i) => (
-              <Card key={i}>
-                <p className="text-lg leading-relaxed">
-                  {TUH === 0 ? (
-                    'Press "Start" to begin'
-                  ) : i == 0 ? (
-                    <>
-                      {displayedWords.map((word, i) => (
+              <Card key={i} className="text-lg">
+                {TUH == 0 ||
+                  (i == 0 && (
+                    <p className="leading-relaxed">
+                      {i == 0 && (
                         <>
-                          <span
-                            key={i}
-                            className={word.isBold ? "font-bold" : ""}
-                          >
-                            {word.text}{" "}
-                          </span>
-                        </>
-                      ))}
-                      {tossupAnswered && (
-                        <>
-                          <br />
-                          <br />
-                          <p>
-                            Answer:{" "}
+                          {displayedWords.map((word, i) => (
                             <span
-                              dangerouslySetInnerHTML={{ __html: tu.answer }}
-                            />
-                          </p>
+                              key={i}
+                              className={word.isBold ? "font-bold" : ""}
+                            >
+                              {word.text}{" "}
+                            </span>
+                          ))}
                         </>
                       )}
-                    </>
-                  ) : (
-                    <span dangerouslySetInnerHTML={{ __html: tu.answer }} />
-                  )}
-                </p>
+                    </p>
+                  ))}
+                {(tossupAnswered || i !== 0) && (
+                  <>
+                    <p>
+                      Answer:{" "}
+                      <span dangerouslySetInnerHTML={{ __html: tu.answer }} />
+                    </p>
+                  </>
+                )}
               </Card>
             ))}
           </div>
@@ -283,7 +302,7 @@ export default function Page() {
             )}
           </AnimatePresence>
         </div>
-        <div className=" bottom-0 w-full border-t-2 border-dashed border-foreground backdrop-blur-md">
+        <div className="bottom-0 w-full border-t-2 border-dashed border-foreground backdrop-blur-md">
           <div className="flex w-full justify-between p-6">
             <div className="flex gap-4">
               <Tooltip>
