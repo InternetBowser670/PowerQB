@@ -43,10 +43,14 @@ export default function Page() {
   const [progressBarWidth, setProgressBarWidth] = useState("0%")
   const [isAnswering, setIsAnswering] = useState(false)
   const [tossupAnswered, setTossupAnswered] = useState(false)
+  const [ansPlaceHolder, setAnsPlaceholder] = useState("Answer")
 
   const [score, setScore] = useState(0)
 
   const isFinished = TUH > 0 && displayedWords.length === allWords.length
+
+  // debug option
+  const forcePromptable = false
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function toReversed(arr: any[]) {
@@ -63,6 +67,7 @@ export default function Page() {
     answerInputForm.reset()
 
     if (check.directive == "accept") {
+      // scoring
       if (toReversed(displayedWords)[0].isBold == true) {
         setScore((prev) => prev + 15)
       } else {
@@ -72,6 +77,10 @@ export default function Page() {
       if (!isFinished) {
         setScore((prev) => prev - 5)
       }
+    } else if (check.directive == "prompt") {
+      if (check.directedPrompt) setAnsPlaceholder(check.directedPrompt)
+      else setAnsPlaceholder("Prompt")
+      return
     }
 
     setIsAnswering(false)
@@ -90,10 +99,14 @@ export default function Page() {
 
     try {
       const res = await fetch(
-        "https://www.qbreader.org/api/random-tossup?powermarkOnly=true"
+        !forcePromptable
+          ? "https://www.qbreader.org/api/random-tossup?powermarkOnly=true"
+          : "https://www.qbreader.org/api/query?powermarkOnly=true&searchType=answer&questionType=tossup&queryString=Bronny James [or LeBron James Jr. or LeBron Raymone James Jr.; prompt on James; reject “LeBron James”]"
       )
       const json = await res.json()
-      const tu = json.tossups[0]
+      const tu = !forcePromptable
+        ? json.tossups[0]
+        : json.tossups.questionArray[0]
 
       const parts = tu.question_sanitized.split("(*)")
       const powerWords = parts[0]
@@ -120,11 +133,12 @@ export default function Page() {
       console.error(error)
     } finally {
       setProgressBarWidth("100%")
+      setAnsPlaceholder("Answer")
       setTimeout(() => {
         setIsFetchingTossup(false)
       }, 1)
     }
-  }, [isFetchingTossup])
+  }, [forcePromptable, isFetchingTossup])
 
   const buzz = useCallback(() => {
     if (TUH == 0 || displayedWords.length == 0 || tossupAnswered || isAnswering)
@@ -225,7 +239,7 @@ export default function Page() {
                 <InputGroup>
                   <InputGroupInput
                     autoFocus
-                    placeholder="Answer"
+                    placeholder={ansPlaceHolder}
                     {...answerInputForm.register("answer")}
                   />
                   <InputGroupAddon align="inline-end">
