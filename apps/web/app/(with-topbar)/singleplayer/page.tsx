@@ -1,152 +1,152 @@
-"use client"
+"use client";
 
-import { Button } from "@workspace/ui/components/button"
-import { Pause, SkipForward, CogIcon, PlayIcon } from "lucide-react"
-import { useCallback, useEffect, useState } from "react"
-import { isTypingTarget } from "@/lib/utils"
+import { Button } from "@workspace/ui/components/button";
+import { Pause, SkipForward, CogIcon, PlayIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { isTypingTarget } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@workspace/ui/components/tooltip"
-import { motion, AnimatePresence } from "motion/react"
-import { v4 } from "uuid"
+} from "@workspace/ui/components/tooltip";
+import { motion, AnimatePresence } from "motion/react";
+import { v4 } from "uuid";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@workspace/ui/components/input-group"
-import { useForm } from "react-hook-form"
-import { Card } from "@workspace/ui/components/card"
-import checkAnswer from "qb-answer-checker"
+} from "@workspace/ui/components/input-group";
+import { useForm } from "react-hook-form";
+import { Card } from "@workspace/ui/components/card";
+import checkAnswer from "qb-answer-checker";
 
 export default function Page() {
   // https://www.qbreader.org/tools/api-docs/schemas/#tossup
 
   // standard abbv. for tossups heard
   // 0 = not started, inclusive
-  const [TUH, setTUH] = useState(0)
+  const [TUH, setTUH] = useState(0);
   const [allWords, setAllWords] = useState<{ text: string; isBold: boolean }[]>(
     []
-  )
+  );
   const [displayedWords, setDisplayedWords] = useState<
     { text: string; isBold: boolean }[]
-  >([])
-  const [isPaused, setIsPaused] = useState(false)
-  const [isFetchingTossup, setIsFetchingTossup] = useState(false)
-  const [loadingBarKey, setLoadingBarKey] = useState(v4())
+  >([]);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isFetchingTossup, setIsFetchingTossup] = useState(false);
+  const [loadingBarKey, setLoadingBarKey] = useState(v4());
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [tossups, setTossups] = useState<any[]>([])
+  const [tossups, setTossups] = useState<any[]>([]);
 
-  const [progressBarWidth, setProgressBarWidth] = useState("0%")
-  const [isAnswering, setIsAnswering] = useState(false)
-  const [tossupAnswered, setTossupAnswered] = useState(false)
-  const [ansPlaceHolder, setAnsPlaceholder] = useState("Answer")
+  const [progressBarWidth, setProgressBarWidth] = useState("0%");
+  const [isAnswering, setIsAnswering] = useState(false);
+  const [tossupAnswered, setTossupAnswered] = useState(false);
+  const [ansPlaceHolder, setAnsPlaceholder] = useState("Answer");
 
-  const [score, setScore] = useState(0)
+  const [score, setScore] = useState(0);
 
-  const isFinished = TUH > 0 && displayedWords.length === allWords.length
+  const isFinished = TUH > 0 && displayedWords.length === allWords.length;
 
   // debug option
-  const forcePromptable = false
+  const forcePromptable = false;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function toReversed(arr: any[]) {
-    return [...arr].reverse()
+    return [...arr].reverse();
   }
 
   const answerInputForm = useForm({
     defaultValues: { answer: "" },
-  })
+  });
 
   function onSubmitAnswer(values: { answer: string }) {
-    const check = checkAnswer(toReversed(tossups)[0].answer, values.answer)
+    const check = checkAnswer(toReversed(tossups)[0].answer, values.answer);
 
-    answerInputForm.reset()
+    answerInputForm.reset();
 
     if (check.directive == "accept") {
       // scoring
       if (toReversed(displayedWords)[0].isBold == true) {
-        setScore((prev) => prev + 15)
+        setScore((prev) => prev + 15);
       } else {
-        setScore((prev) => prev + 10)
+        setScore((prev) => prev + 10);
       }
     } else if (check.directive == "reject") {
       if (!isFinished) {
-        setScore((prev) => prev - 5)
+        setScore((prev) => prev - 5);
       }
     } else if (check.directive == "prompt") {
-      if (check.directedPrompt) setAnsPlaceholder(check.directedPrompt)
-      else setAnsPlaceholder("Prompt")
-      return
+      if (check.directedPrompt) setAnsPlaceholder(check.directedPrompt);
+      else setAnsPlaceholder("Prompt");
+      return;
     }
 
-    setIsAnswering(false)
-    setTossupAnswered(true)
-    setDisplayedWords(allWords)
+    setIsAnswering(false);
+    setTossupAnswered(true);
+    setDisplayedWords(allWords);
   }
 
   const fetchNewTossup = useCallback(async () => {
-    if (isFetchingTossup) return
+    if (isFetchingTossup) return;
 
-    setIsAnswering(false)
-    setProgressBarWidth("0%")
-    setLoadingBarKey(v4())
-    setIsFetchingTossup(true)
-    setTimeout(() => setProgressBarWidth("90%"), 100)
+    setIsAnswering(false);
+    setProgressBarWidth("0%");
+    setLoadingBarKey(v4());
+    setIsFetchingTossup(true);
+    setTimeout(() => setProgressBarWidth("90%"), 100);
 
     try {
       const res = await fetch(
         !forcePromptable
           ? "https://www.qbreader.org/api/random-tossup?powermarkOnly=true"
           : "https://www.qbreader.org/api/query?powermarkOnly=true&searchType=answer&questionType=tossup&queryString=Bronny James [or LeBron James Jr. or LeBron Raymone James Jr.; prompt on James; reject “LeBron James”]"
-      )
-      const json = await res.json()
+      );
+      const json = await res.json();
       const tu = !forcePromptable
         ? json.tossups[0]
-        : json.tossups.questionArray[0]
+        : json.tossups.questionArray[0];
 
-      const parts = tu.question_sanitized.split("(*)")
+      const parts = tu.question_sanitized.split("(*)");
       const powerWords = parts[0]
         .split(" ")
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((w: any) => ({ text: w, isBold: true }))
+        .map((w: any) => ({ text: w, isBold: true }));
       const regularWords = parts[1]
         ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
           parts[1].split(" ").map((w: any) => ({ text: w, isBold: false }))
-        : []
+        : [];
 
-      setTossups((prev) => [...prev, tu])
-      setTossupAnswered(false)
-      setTUH((prev) => prev + 1)
+      setTossups((prev) => [...prev, tu]);
+      setTossupAnswered(false);
+      setTUH((prev) => prev + 1);
       setAllWords([
         ...powerWords,
         { text: "(*)", isBold: true },
         ...regularWords,
-      ])
-      setDisplayedWords([])
-      setIsPaused(false)
-      setProgressBarWidth("100%")
+      ]);
+      setDisplayedWords([]);
+      setIsPaused(false);
+      setProgressBarWidth("100%");
     } catch (error) {
-      console.error(error)
+      console.error(error);
     } finally {
-      setProgressBarWidth("100%")
-      setAnsPlaceholder("Answer")
+      setProgressBarWidth("100%");
+      setAnsPlaceholder("Answer");
       setTimeout(() => {
-        setIsFetchingTossup(false)
-      }, 1)
+        setIsFetchingTossup(false);
+      }, 1);
     }
-  }, [forcePromptable, isFetchingTossup])
+  }, [forcePromptable, isFetchingTossup]);
 
   const buzz = useCallback(() => {
     if (TUH == 0 || displayedWords.length == 0 || tossupAnswered || isAnswering)
-      return
+      return;
 
-    setIsAnswering(true)
-    setIsPaused(true)
-  }, [TUH, displayedWords.length, isAnswering, tossupAnswered])
+    setIsAnswering(true);
+    setIsPaused(true);
+  }, [TUH, displayedWords.length, isAnswering, tossupAnswered]);
 
   useEffect(() => {
     if (TUH > 0 && displayedWords.length < allWords.length && !isPaused) {
@@ -154,67 +154,67 @@ export default function Page() {
         setDisplayedWords((prev) => {
           if (prev.length + 1 === allWords.length) {
             setTossups((prev) => {
-              if (prev.length === 0) return prev
+              if (prev.length === 0) return prev;
 
-              const newState = [...prev]
-              const lastIndex = newState.length - 1
+              const newState = [...prev];
+              const lastIndex = newState.length - 1;
 
               newState[lastIndex] = {
                 ...newState[lastIndex],
                 doneReading: true,
-              }
+              };
 
-              return newState
-            })
+              return newState;
+            });
           }
-          const nextWord = allWords[prev.length]
-          if (!nextWord) return prev
-          return [...prev, nextWord]
-        })
-      }, 140)
+          const nextWord = allWords[prev.length];
+          if (!nextWord) return prev;
+          return [...prev, nextWord];
+        });
+      }, 140);
 
-      return () => clearInterval(intervalId)
+      return () => clearInterval(intervalId);
     }
-  }, [TUH, displayedWords.length, allWords, isPaused])
+  }, [TUH, displayedWords.length, allWords, isPaused]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.repeat) {
-        return
+        return;
       }
 
       if (event.metaKey || event.ctrlKey || event.altKey) {
-        return
+        return;
       }
 
       if (isTypingTarget(event.target)) {
-        return
+        return;
       }
 
       if (event.key.toLowerCase() == "p") {
-        setIsPaused((prev) => !prev)
+        setIsPaused((prev) => !prev);
       }
 
       if (event.key.toLowerCase() == "s") {
-        setDisplayedWords(allWords)
-        setTossupAnswered(true)
+        setDisplayedWords(allWords);
+        setTossupAnswered(true);
       }
 
       if (event.key.toLowerCase() == "n") {
-        fetchNewTossup()
+        fetchNewTossup();
       }
 
       if (event.key.toLowerCase() == " ") {
-        buzz()
+        buzz();
       }
-    }
+    };
 
-    window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [setIsPaused, setDisplayedWords, allWords, fetchNewTossup, buzz])
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [setIsPaused, setDisplayedWords, allWords, fetchNewTossup, buzz]);
 
   return (
     <>
@@ -323,7 +323,7 @@ export default function Page() {
                 <TooltipTrigger asChild>
                   <Button
                     onClick={() => {
-                      if (TUH === 0 || isPaused || isFinished) fetchNewTossup()
+                      if (TUH === 0 || isPaused || isFinished) fetchNewTossup();
                     }}
                   >
                     {TUH === 0 ? "Start" : "Next"}
@@ -381,5 +381,5 @@ export default function Page() {
         </div>
       </div>
     </>
-  )
+  );
 }
