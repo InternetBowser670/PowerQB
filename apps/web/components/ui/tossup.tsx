@@ -63,7 +63,7 @@ export default function TossupCard({
         <div className="absolute z-12 flex h-full w-full items-center justify-center">
           <div>
             <h3>Loading Analysis...</h3>
-            <p>This will take a while.</p>
+            <p>This may take up to a minute.</p>
           </div>
         </div>
       )}
