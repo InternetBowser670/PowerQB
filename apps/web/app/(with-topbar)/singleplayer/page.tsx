@@ -259,7 +259,7 @@ export default function Page() {
             {TUH == 0 && <p>Press &quot;Start&quot; to begin</p>}
             {toReversed(tossups).map((tu, i) => (
               <TossupCard
-                key={i}
+                key={`${tu.set.name}-${tu.packet.number}-${tu.number}`}
                 i={i}
                 tu={tu}
                 TUH={TUH}

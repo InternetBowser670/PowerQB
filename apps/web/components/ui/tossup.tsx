@@ -9,6 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@workspace/ui/components/tooltip";
+import clsx from "clsx";
 
 export default function TossupCard({
   i,
@@ -26,9 +27,11 @@ export default function TossupCard({
 }) {
   const [analyzedTUI, setAnalyzedTUI] = useState<null | number>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [analysisParts, setAnalysisParts] = useState<any[]>([]);
+  const [analysisParts, setAnalysisParts] = useState<any[] | null>(null);
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
 
   async function analyzeTossup() {
+    setLoadingAnalysis(true);
     const res = await fetch("/api/analyze-tossup", {
       method: "POST",
       body: JSON.stringify({
@@ -39,6 +42,7 @@ export default function TossupCard({
 
     const json = await res.json();
 
+    setLoadingAnalysis(false);
     setAnalysisParts(json.analyzedTossupParts);
     setAnalyzedTUI(i);
   }
@@ -51,66 +55,86 @@ export default function TossupCard({
     }
   }
 
+  const hasAnalysis = analysisParts && analysisParts.length > 0;
+
   return (
-    <Card key={i} className="text-lg">
-      {(TUH == 0 || i == 0) &&
-        (analyzedTUI !== i ? (
-          <p className="leading-relaxed">
-            <>
-              {displayedWords.map((word, i) => (
-                <span key={i} className={word.isBold ? "font-bold" : ""}>
-                  {word.text}{" "}
-                </span>
-              ))}
-            </>
-          </p>
-        ) : (
-          analyzedTUI === i && (
-            <>
-              <p>
-                {analysisParts.map((part, i) => (
-                  <React.Fragment key={i}>
-                    {part.analysis ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <mark>{part.text}</mark>
-                        </TooltipTrigger>
-                        <TooltipContent>{part.analysis}</TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <span>{part.text}</span>
-                    )}
-                  </React.Fragment>
-                ))}
-              </p>
-            </>
-          )
-        ))}
-      {(tossupAnswered || i !== 0) && (
-        <div className="flex w-full justify-between">
-          <p>
-            Answer: <span dangerouslySetInnerHTML={{ __html: tu.answer }} />
-          </p>
-          {tossupAnswered && i == 0 && (
-            <Button
-              variant={"link"}
-              onClick={
-                analyzedTUI == i
-                  ? toggleAnalysis
-                  : analysisParts == null
-                    ? analyzeTossup
-                    : toggleAnalysis
-              }
-            >
-              {!(analyzedTUI == i)
-                ? analysisParts == null
-                  ? "Analyze"
-                  : "Show analysis"
-                : "Hide analysis"}
-            </Button>
-          )}
+    <Card className="relative text-lg">
+      {loadingAnalysis && (
+        <div className="absolute z-12 flex h-full w-full items-center justify-center">
+          <div>
+            <h3>Loading Analysis...</h3>
+            <p>This will take a while.</p>
+          </div>
         </div>
       )}
+      <div className={clsx(loadingAnalysis && "blur-sm")}>
+        {(TUH == 0 || i == 0) &&
+          (analyzedTUI !== i || analysisParts == null ? (
+            <p className="leading-relaxed">
+              <>
+                {displayedWords.map((word, i) => (
+                  <span key={i} className={word.isBold ? "font-bold" : ""}>
+                    {word.text}{" "}
+                  </span>
+                ))}
+              </>
+            </p>
+          ) : (
+            analyzedTUI === i &&
+            analysisParts && (
+              <>
+                <p>
+                  {analysisParts.map((part, i) => (
+                    <React.Fragment key={i}>
+                      {part.analysis ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <mark className="mx-0.5 rounded-md bg-primary px-0.5">
+                              {part.text}
+                            </mark>
+                          </TooltipTrigger>
+                          <TooltipContent>{part.analysis}</TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <span>{part.text}</span>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </p>
+              </>
+            )
+          ))}
+        {(tossupAnswered || i !== 0) && (
+          <div
+            className={clsx(
+              "flex w-full justify-between",
+              tossupAnswered && i == 0 && "mt-4"
+            )}
+          >
+            <p>
+              Answer: <span dangerouslySetInnerHTML={{ __html: tu.answer }} />
+            </p>
+            {tossupAnswered && i == 0 && (
+              <Button
+                variant={"link"}
+                onClick={
+                  analyzedTUI == i
+                    ? toggleAnalysis
+                    : analysisParts == null
+                      ? analyzeTossup
+                      : toggleAnalysis
+                }
+              >
+                {analyzedTUI !== i
+                  ? hasAnalysis
+                    ? "Show analysis"
+                    : "Analyze"
+                  : "Hide analysis"}
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
     </Card>
   );
 }
