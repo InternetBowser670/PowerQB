@@ -18,8 +18,8 @@ import {
   InputGroupInput,
 } from "@workspace/ui/components/input-group";
 import { useForm } from "react-hook-form";
-import { Card } from "@workspace/ui/components/card";
 import checkAnswer from "qb-answer-checker";
+import TossupCard from "@/components/ui/tossup";
 
 export default function Page() {
   // https://www.qbreader.org/tools/api-docs/schemas/#tossup
@@ -219,7 +219,7 @@ export default function Page() {
   return (
     <>
       <div className="flex h-full w-full flex-col justify-between">
-        <div className="flex h-full w-full flex-col gap-4 overflow-y-scroll! p-4">
+        <div className="flex h-full w-full flex-col gap-4 overflow-y-auto! p-4">
           <div className="flex items-center justify-between">
             <h4>
               {TUH !== 0
@@ -258,33 +258,14 @@ export default function Page() {
           <div className="relative flex grow flex-col gap-4 pt-[15px]">
             {TUH == 0 && <p>Press &quot;Start&quot; to begin</p>}
             {toReversed(tossups).map((tu, i) => (
-              <Card key={i} className="text-lg">
-                {TUH == 0 ||
-                  (i == 0 && (
-                    <p className="leading-relaxed">
-                      {i == 0 && (
-                        <>
-                          {displayedWords.map((word, i) => (
-                            <span
-                              key={i}
-                              className={word.isBold ? "font-bold" : ""}
-                            >
-                              {word.text}{" "}
-                            </span>
-                          ))}
-                        </>
-                      )}
-                    </p>
-                  ))}
-                {(tossupAnswered || i !== 0) && (
-                  <>
-                    <p>
-                      Answer:{" "}
-                      <span dangerouslySetInnerHTML={{ __html: tu.answer }} />
-                    </p>
-                  </>
-                )}
-              </Card>
+              <TossupCard
+                key={i}
+                i={i}
+                tu={tu}
+                TUH={TUH}
+                displayedWords={displayedWords}
+                tossupAnswered={tossupAnswered}
+              />
             ))}
           </div>
         </div>
