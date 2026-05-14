@@ -58,7 +58,7 @@ export default function TossupCard({
   const hasAnalysis = analysisParts && analysisParts.length > 0;
 
   return (
-    <Card className="relative text-lg">
+    <Card className="relative text-lg wrap-break-word">
       {loadingAnalysis && (
         <div className="absolute z-12 flex h-full w-full items-center justify-center">
           <div>

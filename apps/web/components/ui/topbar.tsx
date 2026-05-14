@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Show,
@@ -6,14 +6,14 @@ import {
   SignUpButton,
   UserButton,
   ClerkLoading,
-} from "@clerk/nextjs"
-import TextLogo from "@workspace/ui/components/branding/text-logo"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Button } from "@workspace/ui/components/button"
+} from "@clerk/nextjs";
+import TextLogo from "@workspace/ui/components/branding/text-logo";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@workspace/ui/components/button";
 
 export default function Topbar() {
-  const router = useRouter()
+  const router = useRouter();
   return (
     <>
       <header className="z-20 flex h-16 w-full items-center justify-between gap-4 border-b border-dashed bg-accent/10 p-4">
@@ -42,5 +42,5 @@ export default function Topbar() {
         </div>
       </header>
     </>
-  )
+  );
 }

@@ -20,6 +20,17 @@ import {
 import { useForm } from "react-hook-form";
 import checkAnswer from "qb-answer-checker";
 import TossupCard from "@/components/ui/tossup";
+import {
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+} from "@workspace/ui/components/combobox";
 
 export default function Page() {
   // https://www.qbreader.org/tools/api-docs/schemas/#tossup
@@ -44,10 +55,27 @@ export default function Page() {
   const [isAnswering, setIsAnswering] = useState(false);
   const [tossupAnswered, setTossupAnswered] = useState(false);
   const [ansPlaceHolder, setAnsPlaceholder] = useState("Answer");
+  const [sidebarToggled, setSidebarToggled] = useState(true);
+  const [categories, setCategories] = useState([]);
 
   const [score, setScore] = useState(0);
 
   const isFinished = TUH > 0 && displayedWords.length === allWords.length;
+
+  const catOptions = [
+    "Science",
+    "Literature",
+    "History",
+    "Fine Arts",
+    "Religion",
+    "Mythology",
+    "Philosophy",
+    "Social Science",
+    "Current Events",
+    "Geography",
+    "Other Academic",
+    "Pop Culture",
+  ];
 
   // debug option
   const forcePromptable = false;
@@ -98,11 +126,26 @@ export default function Page() {
     setTimeout(() => setProgressBarWidth("90%"), 100);
 
     try {
-      const res = await fetch(
-        !forcePromptable
-          ? "https://www.qbreader.org/api/random-tossup?powermarkOnly=true"
-          : "https://www.qbreader.org/api/query?powermarkOnly=true&searchType=answer&questionType=tossup&queryString=Bronny James [or LeBron James Jr. or LeBron Raymone James Jr.; prompt on James; reject “LeBron James”]"
-      );
+      const endpoint = "https://www.qbreader.org/api/random-tossup";
+
+      const baseURL = new URL(endpoint);
+
+      if (forcePromptable) {
+        baseURL.searchParams.set("searchType", "answer");
+        baseURL.searchParams.set(
+          "queryString",
+          "Bronny James [or LeBron James Jr. or LeBron Raymone James Jr.; prompt on James; reject “LeBron James”]"
+        );
+      }
+
+      baseURL.searchParams.set("questionType", "tossup");
+      baseURL.searchParams.set("powermarkOnly", "true");
+      if (categories && categories.length > 0) {
+        baseURL.searchParams.set("categories", categories.join(","));
+      }
+
+      const res = await fetch(baseURL.toString());
+
       const json = await res.json();
       const tu = !forcePromptable
         ? json.tossups[0]
@@ -138,7 +181,7 @@ export default function Page() {
         setIsFetchingTossup(false);
       }, 1);
     }
-  }, [forcePromptable, isFetchingTossup]);
+  }, [categories, forcePromptable, isFetchingTossup]);
 
   const buzz = useCallback(() => {
     if (TUH == 0 || displayedWords.length == 0 || tossupAnswered || isAnswering)
@@ -204,6 +247,10 @@ export default function Page() {
         fetchNewTossup();
       }
 
+      if (event.key.toLowerCase() == "e") {
+        setSidebarToggled((prev) => !prev);
+      }
+
       if (event.key.toLowerCase() == " ") {
         buzz();
       }
@@ -219,146 +266,200 @@ export default function Page() {
   return (
     <>
       <div className="flex h-full w-full flex-col justify-between">
-        <div className="flex h-full w-full flex-col gap-4 overflow-y-auto! p-4">
-          <div className="flex items-center justify-between">
-            <h4>
-              {TUH !== 0
-                ? `Tossup ${TUH} | ${tossups[TUH - 1]!.set.name} Packet ${tossups[TUH - 1]!.packet.number} Question ${tossups[TUH - 1]!.number}`
-                : "Not started"}
-            </h4>
-            <div>
-              <h3 className="text-sm">
-                <span className="mr-1 text-4xl">{score}</span>Points
-              </h3>
-            </div>
-          </div>
-          <hr className="mb-0" />
-          <AnimatePresence>
-            {isAnswering && (
-              <form onSubmit={answerInputForm.handleSubmit(onSubmitAnswer)}>
-                <InputGroup>
-                  <InputGroupInput
-                    autoFocus
-                    placeholder={ansPlaceHolder}
-                    {...answerInputForm.register("answer")}
+        <div className="flex h-full min-w-0">
+          <div className="flex min-w-0 grow flex-col">
+            <div className="flex max-h-full w-full min-w-0 grow flex-col gap-4 overflow-y-auto! p-4">
+              <div className="flex items-center justify-between">
+                <h4>
+                  {TUH !== 0
+                    ? `Tossup ${TUH} | ${tossups[TUH - 1]!.set.name} Packet ${tossups[TUH - 1]!.packet.number} Question ${tossups[TUH - 1]!.number}`
+                    : "Not started"}
+                </h4>
+                <div>
+                  <h3 className="text-sm">
+                    <span className="mr-1 text-4xl">{score}</span>Points
+                  </h3>
+                </div>
+              </div>
+              <hr className="mb-0" />
+              <AnimatePresence>
+                {isAnswering && (
+                  <form onSubmit={answerInputForm.handleSubmit(onSubmitAnswer)}>
+                    <InputGroup>
+                      <InputGroupInput
+                        autoFocus
+                        placeholder={ansPlaceHolder}
+                        {...answerInputForm.register("answer")}
+                      />
+                      <InputGroupAddon align="inline-end">
+                        <InputGroupButton
+                          className="p-2"
+                          type="submit"
+                          variant="secondary"
+                        >
+                          Submit
+                        </InputGroupButton>
+                      </InputGroupAddon>
+                    </InputGroup>
+                  </form>
+                )}
+              </AnimatePresence>
+              <div className="relative flex min-w-0! grow flex-col gap-4 pt-[15px]">
+                {TUH == 0 && (
+                  <p>
+                    Press &quot;Start&quot; or <kbd>n</kbd> to begin
+                  </p>
+                )}
+                {toReversed(tossups).map((tu, i) => (
+                  <TossupCard
+                    key={`${tu.set.name}-${tu.packet.number}-${tu.number}`}
+                    i={i}
+                    tu={tu}
+                    TUH={TUH}
+                    displayedWords={displayedWords}
+                    tossupAnswered={tossupAnswered}
                   />
-                  <InputGroupAddon align="inline-end">
-                    <InputGroupButton
-                      className="p-2"
-                      type="submit"
-                      variant="secondary"
-                    >
-                      Submit
-                    </InputGroupButton>
-                  </InputGroupAddon>
-                </InputGroup>
-              </form>
-            )}
-          </AnimatePresence>
-          <div className="relative flex grow flex-col gap-4 pt-[15px]">
-            {TUH == 0 && <p>Press &quot;Start&quot; to begin</p>}
-            {toReversed(tossups).map((tu, i) => (
-              <TossupCard
-                key={`${tu.set.name}-${tu.packet.number}-${tu.number}`}
-                i={i}
-                tu={tu}
-                TUH={TUH}
-                displayedWords={displayedWords}
-                tossupAnswered={tossupAnswered}
-              />
-            ))}
-          </div>
-        </div>
-        <div className="absolute bottom-0 left-0 z-10 h-[15px] w-full overflow-hidden">
-          <AnimatePresence>
-            {isFetchingTossup && (
-              <motion.div
-                key={loadingBarKey + " tossup-progress"}
-                className="h-full bg-primary"
-                initial={{ y: 15, width: "0%" }}
-                animate={{
-                  y: 0,
-                  width: progressBarWidth,
-                }}
-                exit={{
-                  y: 15,
-                  transition: {
-                    y: { type: "spring", stiffness: 300, damping: 30 },
-                  },
-                }}
-                transition={{
-                  width: {
-                    duration: progressBarWidth === "100%" ? 0.3 : 5,
-                    ease: "easeOut",
-                  },
-                  y: { type: "spring", stiffness: 300, damping: 30 },
-                }}
-              />
-            )}
-          </AnimatePresence>
-        </div>
-        <div className="bottom-0 w-full border-t-2 border-dashed border-foreground backdrop-blur-md">
-          <div className="flex w-full justify-between p-6">
-            <div className="flex gap-4">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => {
-                      if (TUH === 0 || isPaused || isFinished) fetchNewTossup();
+                ))}
+              </div>
+            </div>
+            <div className="absolute bottom-0 left-0 z-10 h-[15px] w-full overflow-hidden">
+              <AnimatePresence>
+                {isFetchingTossup && (
+                  <motion.div
+                    key={loadingBarKey + " tossup-progress"}
+                    className="h-full bg-primary"
+                    initial={{ y: 15, width: "0%" }}
+                    animate={{
+                      y: 0,
+                      width: progressBarWidth,
                     }}
-                  >
-                    {TUH === 0 ? "Start" : "Next"}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Shortcut: </p>
-                  <kbd>n</kbd>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="secondary"
-                    onClick={() => setDisplayedWords(allWords)}
-                  >
-                    <SkipForward />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Shortcut: </p>
-                  <kbd>s</kbd>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="secondary"
-                    onClick={() => setIsPaused(!isPaused)}
-                  >
-                    {isPaused ? <PlayIcon /> : <Pause />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Shortcut: </p>
-                  <kbd>p</kbd>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant={"secondary"}>
-                    <CogIcon />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Shortcut: </p>
-                  <kbd>e</kbd>
-                </TooltipContent>
-              </Tooltip>
+                    exit={{
+                      y: 15,
+                      transition: {
+                        y: { type: "spring", stiffness: 300, damping: 30 },
+                      },
+                    }}
+                    transition={{
+                      width: {
+                        duration: progressBarWidth === "100%" ? 0.3 : 5,
+                        ease: "easeOut",
+                      },
+                      y: { type: "spring", stiffness: 300, damping: 30 },
+                    }}
+                  />
+                )}
+              </AnimatePresence>
             </div>
-            <div>
-              <Button onClick={buzz}>Buzz</Button>
+            <div className="relative bottom-0 w-full border-t-2 border-dashed backdrop-blur-md">
+              <div className="flex w-full justify-between p-6">
+                <div className="flex gap-4">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => {
+                          if (TUH === 0 || isPaused || isFinished)
+                            fetchNewTossup();
+                        }}
+                      >
+                        {TUH === 0 ? "Start" : "Next"}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Shortcut: </p>
+                      <kbd>n</kbd>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setDisplayedWords(allWords)}
+                      >
+                        <SkipForward />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Shortcut: </p>
+                      <kbd>s</kbd>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setIsPaused(!isPaused)}
+                      >
+                        {isPaused ? <PlayIcon /> : <Pause />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Shortcut: </p>
+                      <kbd>p</kbd>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => setSidebarToggled((prev) => !prev)}
+                        variant={"secondary"}
+                      >
+                        <CogIcon />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Shortcut: </p>
+                      <kbd>e</kbd>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <div>
+                  <Button onClick={buzz}>Buzz</Button>
+                </div>
+              </div>
             </div>
           </div>
+          <motion.div
+            animate={{
+              width: sidebarToggled ? 320 : 0,
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 30,
+            }}
+            className="relative shrink-0 overflow-hidden border-l-2 border-dashed"
+          >
+            <div className="flex h-full w-xs flex-col items-center gap-4 p-4">
+              <h1 className="m-4">Settings</h1>
+              <div className="w-full">
+                <Combobox
+                  items={catOptions}
+                  multiple
+                  value={categories}
+                  onValueChange={setCategories}
+                >
+                  <ComboboxChips>
+                    <ComboboxValue>
+                      {categories.map((item) => (
+                        <ComboboxChip key={item}>{item}</ComboboxChip>
+                      ))}
+                    </ComboboxValue>
+                    <ComboboxChipsInput placeholder="Add category" />
+                  </ComboboxChips>
+                  <ComboboxContent className="top-2 left-4 border">
+                    <ComboboxEmpty>No items found.</ComboboxEmpty>
+                    <ComboboxList>
+                      {(item) => (
+                        <ComboboxItem key={item} value={item}>
+                          {item}
+                        </ComboboxItem>
+                      )}
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </>

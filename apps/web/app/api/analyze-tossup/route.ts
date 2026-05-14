@@ -76,9 +76,9 @@ Each part must contain:
 Rules:
 - Parts must remain in order
 - Parts must not overlap
-- Do NOT include the answer anywhere
+- Do NOT include the answer as a part, but you can reference it
 - Analysis should explain clues useful for identifying the answer
-- Only attach analysis to especially important clues
+- Only attach analysis to especially important clues that should be only a couple words long
 - Leave many parts without analysis
 - Analysis can be detailed
 - Keep analyzed text spans reasonably short with good space between them, for instance if there was a tossup saying "The modern method of synthesizing this compound performs oxidation in the presence of a vanadium oxide catalyst to yield a dehydrated dimer of this compound which fumes," you could put analysis for dehydrated dimer.
