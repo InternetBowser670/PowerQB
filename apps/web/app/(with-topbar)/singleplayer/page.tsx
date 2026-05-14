@@ -31,6 +31,8 @@ import {
   ComboboxList,
   ComboboxValue,
 } from "@workspace/ui/components/combobox";
+import { Slider } from "@workspace/ui/components/slider";
+import { Label } from "@workspace/ui/components/label";
 
 export default function Page() {
   // https://www.qbreader.org/tools/api-docs/schemas/#tossup
@@ -57,6 +59,7 @@ export default function Page() {
   const [ansPlaceHolder, setAnsPlaceholder] = useState("Answer");
   const [sidebarToggled, setSidebarToggled] = useState(true);
   const [categories, setCategories] = useState([]);
+  const [difficulties, setDifficulties] = useState([0, 1, 2, 3, 4, 5]);
 
   const [score, setScore] = useState(0);
 
@@ -140,8 +143,13 @@ export default function Page() {
 
       baseURL.searchParams.set("questionType", "tossup");
       baseURL.searchParams.set("powermarkOnly", "true");
+
       if (categories && categories.length > 0) {
         baseURL.searchParams.set("categories", categories.join(","));
+      }
+
+      if (difficulties && difficulties.length > 0) {
+        baseURL.searchParams.set("difficulties", difficulties.join(","));
       }
 
       const res = await fetch(baseURL.toString());
@@ -181,7 +189,7 @@ export default function Page() {
         setIsFetchingTossup(false);
       }, 1);
     }
-  }, [categories, forcePromptable, isFetchingTossup]);
+  }, [categories, difficulties, forcePromptable, isFetchingTossup]);
 
   const buzz = useCallback(() => {
     if (TUH == 0 || displayedWords.length == 0 || tossupAnswered || isAnswering)
@@ -429,10 +437,14 @@ export default function Page() {
             }}
             className="relative shrink-0 overflow-hidden border-l-2 border-dashed"
           >
-            <div className="flex h-full w-xs flex-col items-center gap-4 p-4">
+            <div className="flex h-full w-xs flex-col items-center gap-6 p-4">
               <h1 className="m-4">Settings</h1>
               <div className="w-full">
+                <Label className="mb-2" htmlFor="categories">
+                  Categories:
+                </Label>
                 <Combobox
+                  id="categories"
                   items={catOptions}
                   multiple
                   value={categories}
@@ -457,6 +469,32 @@ export default function Page() {
                     </ComboboxList>
                   </ComboboxContent>
                 </Combobox>
+              </div>
+              <div className="w-full">
+                <Label className="mb-2" htmlFor="difficulties">
+                  Difficulties (0-10, 0 is all Pop Culture, 10 is open):
+                </Label>
+                <Slider
+                  id="difficulties"
+                  value={[
+                    difficulties[0] !== undefined ? difficulties[0] : 1,
+                    difficulties[difficulties.length - 1] !== undefined
+                      ? difficulties[difficulties.length - 1]!
+                      : 5,
+                  ]}
+                  onValueChange={(val: number[]) => {
+                    const [min, max] = val;
+                    const rangeArray = Array.from(
+                      { length: max! - min! + 1 },
+                      (_, i) => min! + i
+                    );
+                    setDifficulties(rangeArray);
+                  }}
+                  min={1}
+                  max={10}
+                  step={1}
+                  className="mx-auto w-full max-w-xs"
+                />
               </div>
             </div>
           </motion.div>
