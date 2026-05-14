@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { Badge } from "@workspace/ui/components/badge"
-import { Button } from "@workspace/ui/components/button"
-import SplitText from "./SplitText"
-import { Link as ScrollLink } from "react-scroll"
-import { useRouter } from "next/navigation"
+import { Badge } from "@workspace/ui/components/badge";
+import { Button } from "@workspace/ui/components/button";
+import SplitText from "./SplitText";
+import { Link as ScrollLink } from "react-scroll";
+import { useRouter } from "next/navigation";
 
 const PatternPlaceholder = () => {
   const router = useRouter();
@@ -13,7 +13,7 @@ const PatternPlaceholder = () => {
     <div className="relative z-10">
       <div className="container py-28 md:py-32">
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 text-center">
-          <Badge variant="secondary">PowerQB.com</Badge>
+          <Badge variant="secondary">PowerQB.net</Badge>
           <div className="max-w-3xl">
             <h1 className="mb-6 font-body text-4xl font-medium tracking-tight text-pretty text-foreground md:text-5xl lg:text-6xl">
               A new method to practice{" "}
@@ -30,15 +30,22 @@ const PatternPlaceholder = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button onClick={() => router.push("/dashboard")}>Get Started</Button>
-            <ScrollLink to="learnMore" offset={600} smooth={true} duration={1000}>
+            <Button onClick={() => router.push("/dashboard")}>
+              Get Started
+            </Button>
+            <ScrollLink
+              to="learnMore"
+              offset={600}
+              smooth={true}
+              duration={1000}
+            >
               <Button variant="secondary">Learn More</Button>
             </ScrollLink>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export { PatternPlaceholder }
+export { PatternPlaceholder };

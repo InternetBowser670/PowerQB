@@ -1,50 +1,50 @@
-"use client"
+"use client";
 
-import { BackgroundPattern1 } from "@workspace/ui/components/background-pattern1"
-import { useTheme } from "next-themes"
-import { useIsMounted } from "@workspace/ui/hooks/useIsMounted"
+import { BackgroundPattern1 } from "@workspace/ui/components/background-pattern1";
+import { useTheme } from "next-themes";
+import { useIsMounted } from "@workspace/ui/hooks/useIsMounted";
 import {
   ClerkLoading,
   Show,
   SignInButton,
   SignUpButton,
   UserButton,
-} from "@clerk/nextjs"
-import { Button } from "@workspace/ui/components/button"
-import TextLogo from "@workspace/ui/components/branding/text-logo"
-import { Element } from "react-scroll"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import EbbinghausChart from "@/components/ui/ebbinghaus-chart"
-import { Card } from "@workspace/ui/components/card"
-import GridPattern from "@workspace/ui/components/ui/grid-pattern"
-import { motion, useScroll, useTransform } from "motion/react"
-import { useRef } from "react"
-import clsx from "clsx"
+} from "@clerk/nextjs";
+import { Button } from "@workspace/ui/components/button";
+import TextLogo from "@workspace/ui/components/branding/text-logo";
+import { Element } from "react-scroll";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import EbbinghausChart from "@/components/ui/ebbinghaus-chart";
+import { Card } from "@workspace/ui/components/card";
+import GridPattern from "@workspace/ui/components/ui/grid-pattern";
+import { motion, useScroll, useTransform } from "motion/react";
+import { useRef } from "react";
+import clsx from "clsx";
 
 function Section2() {
-  const { resolvedTheme } = useTheme()
-  const ref = useRef(null)
+  const { resolvedTheme } = useTheme();
+  const ref = useRef(null);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end end"],
-  })
+  });
 
   const { progress, foregroundY, backgroundY } = useTransform(
     scrollYProgress,
-    [0, 0.2, 0.9, 1],
+    [0, 0.3, 0.8, 1],
     {
       progress: ["0%", "0%", "100%", "100%"],
-      foregroundY: [600, 100, -100, -600],
-      backgroundY: [100, 50, -50, -100],
+      foregroundY: [600, 50, -50, -600],
+      backgroundY: [300, 40, -40, -300],
     },
     { clamp: false }
-  )
+  );
 
   return (
     resolvedTheme && (
       <Element name="learnMore">
-        <div ref={ref} className="relative h-[300vh] w-full">
+        <div ref={ref} className="relative h-[400vh] w-full">
           <div
             className={clsx(
               "sticky top-0 flex h-svh w-full items-center overflow-hidden p-6",
@@ -58,7 +58,7 @@ function Section2() {
               ></motion.div>
             </motion.div>
             <motion.div
-              className="absolute inset-x-0 -top-[200px] h-[calc(100%+400px)]"
+              className="absolute inset-x-0 -top-[300px] h-[calc(100%+600px)]"
               style={{ y: backgroundY }}
             >
               <GridPattern
@@ -92,15 +92,15 @@ function Section2() {
         </div>
       </Element>
     )
-  )
+  );
 }
 
 function Section3() {
-  const ref = useRef(null)
+  const ref = useRef(null);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end end"],
-  })
+  });
 
   const { foregroundY } = useTransform(
     scrollYProgress,
@@ -110,7 +110,7 @@ function Section3() {
       backgroundY: [200, 0],
     },
     { clamp: false }
-  )
+  );
 
   return (
     <Element name="footer">
@@ -129,15 +129,15 @@ function Section3() {
         </motion.div>
       </div>
     </Element>
-  )
+  );
 }
 
 export default function Page() {
-  const { resolvedTheme } = useTheme()
-  const isMounted = useIsMounted()
-  const router = useRouter()
+  const { resolvedTheme } = useTheme();
+  const isMounted = useIsMounted();
+  const router = useRouter();
 
-  if (!isMounted || !resolvedTheme) return null
+  if (!isMounted || !resolvedTheme) return null;
 
   return (
     <>
@@ -171,5 +171,5 @@ export default function Page() {
       <Section2 />
       <Section3 />
     </>
-  )
+  );
 }
