@@ -59,7 +59,7 @@ export default function TossupCard({
 
   return (
     <Card className="relative text-lg wrap-break-word">
-      {loadingAnalysis && (
+      {loadingAnalysis && i == 0 && (
         <div className="absolute z-12 flex h-full w-full items-center justify-center">
           <div>
             <h3>Loading Analysis...</h3>
@@ -67,7 +67,7 @@ export default function TossupCard({
           </div>
         </div>
       )}
-      <div className={clsx(loadingAnalysis && "blur-sm")}>
+      <div className={clsx(loadingAnalysis && i == 0 && "blur-sm")}>
         {(TUH == 0 || i == 0) &&
           (analyzedTUI !== i || analysisParts == null ? (
             <p className="leading-relaxed">

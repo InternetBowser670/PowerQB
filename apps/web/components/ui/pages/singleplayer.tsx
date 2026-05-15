@@ -429,6 +429,7 @@ export default function Singleplayer() {
           <motion.div
             animate={{
               width: sidebarToggled ? 320 : 0,
+              borderColor: sidebarToggled ? "#202938" : "#020818",
             }}
             transition={{
               type: "spring",
