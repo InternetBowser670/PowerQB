@@ -112,7 +112,8 @@ export default function TossupCard({
             )}
           >
             <p>
-              Answer: <span dangerouslySetInnerHTML={{ __html: tu.answer }} />
+              {i == 0 && "Answer: "}{" "}
+              <span dangerouslySetInnerHTML={{ __html: tu.answer }} />
             </p>
             {tossupAnswered && i == 0 && (
               <Button
