@@ -292,24 +292,36 @@ export default function Singleplayer() {
               <hr className="mb-0" />
               <AnimatePresence>
                 {isAnswering && (
-                  <form onSubmit={answerInputForm.handleSubmit(onSubmitAnswer)}>
-                    <InputGroup>
-                      <InputGroupInput
-                        autoFocus
-                        placeholder={ansPlaceHolder}
-                        {...answerInputForm.register("answer")}
-                      />
-                      <InputGroupAddon align="inline-end">
-                        <InputGroupButton
-                          className="p-2"
-                          type="submit"
-                          variant="secondary"
-                        >
-                          Submit
-                        </InputGroupButton>
-                      </InputGroupAddon>
-                    </InputGroup>
-                  </form>
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: 50 }}
+                    exit={{ height: 0 }}
+                    className="relative flex w-full shrink-0 items-end overflow-hidden"
+                  >
+                    <div className="w-full p-2">
+                      <form
+                        onSubmit={answerInputForm.handleSubmit(onSubmitAnswer)}
+                        className="w-full"
+                      >
+                        <InputGroup>
+                          <InputGroupInput
+                            autoFocus
+                            placeholder={ansPlaceHolder}
+                            {...answerInputForm.register("answer")}
+                          />
+                          <InputGroupAddon align="inline-end">
+                            <InputGroupButton
+                              className="p-2"
+                              type="submit"
+                              variant="secondary"
+                            >
+                              Submit
+                            </InputGroupButton>
+                          </InputGroupAddon>
+                        </InputGroup>
+                      </form>
+                    </div>
+                  </motion.div>
                 )}
               </AnimatePresence>
               <div className="relative flex min-w-0! grow flex-col gap-4 pt-[15px]">

@@ -31,6 +31,7 @@
     "@fontsource-variable/ballet": "^5.2.8",
     "@fontsource/mea-culpa": "^5.2.8",
     "@google/genai": "^2.1.0",
+    "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
     "mongodb": "^7.1.1",
     "qb-answer-checker": "^1.1.9",
@@ -40,5 +41,13 @@
     "svix": "^1.90.0",
     "usehooks-ts": "^3.1.1",
     "uuid": "^14.0.0"
+  },
+  "allowScripts": {
+    "@clerk/shared@4.9.0": true,
+    "@google/genai@2.1.0": true,
+    "esbuild@0.25.12": true,
+    "msw@2.14.2": true,
+    "protobufjs@7.5.8": true,
+    "sharp@0.34.5": true
   }
 }

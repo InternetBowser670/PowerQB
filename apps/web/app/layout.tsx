@@ -6,6 +6,7 @@ import { cn } from "@workspace/ui/lib/utils"
 import { ClerkProvider } from "@clerk/nextjs"
 import "@fontsource/mea-culpa"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
+import { Analytics } from "@vercel/analytics/next"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -44,6 +45,7 @@ export default function RootLayout({
           </ThemeProvider>
         </ClerkProvider>
       </body>
+      <Analytics />
     </html>
   )
 }

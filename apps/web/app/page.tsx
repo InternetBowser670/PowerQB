@@ -58,7 +58,7 @@ function Section2() {
               ></motion.div>
             </motion.div>
             <motion.div
-              className="absolute inset-x-0 -top-[300px] h-[calc(100%+600px)]"
+              className="absolute inset-x-0 top-[-300px] h-[calc(100%+600px)]"
               style={{ y: backgroundY }}
             >
               <GridPattern
