@@ -4,7 +4,7 @@ import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@workspace/ui/lib/utils"
 import { ClerkProvider } from "@clerk/nextjs"
-import "@fontsource/mea-culpa"
+import "@fontsource/mea-culpa/index.css"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { Analytics } from "@vercel/analytics/next"
 
