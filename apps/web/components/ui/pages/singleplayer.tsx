@@ -20,19 +20,24 @@ import {
 import { useForm } from "react-hook-form";
 import checkAnswer from "qb-answer-checker";
 import TossupCard from "../tossup";
-import {
-  Combobox,
-  ComboboxChip,
-  ComboboxChips,
-  ComboboxChipsInput,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxItem,
-  ComboboxList,
-  ComboboxValue,
-} from "@workspace/ui/components/combobox";
-import { Slider } from "@workspace/ui/components/slider";
 import { Label } from "@workspace/ui/components/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@workspace/ui/components/dialog";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/tabs";
+import { Toggle } from "@workspace/ui/components/toggle";
+import { Separator } from "@workspace/ui/components/separator";
+import { Checkbox } from "@workspace/ui/components/checkbox";
 
 export default function Singleplayer() {
   // https://www.qbreader.org/tools/api-docs/schemas/#tossup
@@ -58,9 +63,8 @@ export default function Singleplayer() {
   const [tossupAnswered, setTossupAnswered] = useState(false);
   const [ansPlaceHolder, setAnsPlaceholder] = useState("Answer");
   const [sidebarToggled, setSidebarToggled] = useState(true);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [difficulties, setDifficulties] = useState([0, 1, 2, 3, 4, 5]);
-
   const [score, setScore] = useState(0);
 
   const isFinished = TUH > 0 && displayedWords.length === allWords.length;
@@ -271,6 +275,20 @@ export default function Singleplayer() {
     };
   }, [setIsPaused, setDisplayedWords, allWords, fetchNewTossup, buzz]);
 
+  const diffLabels = [
+    "Pop Culture",
+    "Middle School",
+    "Easy High School",
+    "Regular High School",
+    "Hard High School",
+    "National High School",
+    "Easy College",
+    "Medium College",
+    "Regionals College",
+    "Nationals College",
+    "Open",
+  ];
+
   return (
     <>
       <div className="flex h-full w-full flex-col justify-between">
@@ -453,61 +471,97 @@ export default function Singleplayer() {
             <div className="flex h-full w-xs flex-col items-center gap-6 p-4">
               <h1 className="m-4">Settings</h1>
               <div className="w-full">
-                <Label className="mb-2" htmlFor="categories">
-                  Categories:
-                </Label>
-                <Combobox
-                  id="categories"
-                  items={catOptions}
-                  multiple
-                  value={categories}
-                  onValueChange={setCategories}
-                >
-                  <ComboboxChips>
-                    <ComboboxValue>
-                      {categories.map((item) => (
-                        <ComboboxChip key={item}>{item}</ComboboxChip>
-                      ))}
-                    </ComboboxValue>
-                    <ComboboxChipsInput placeholder="Add category" />
-                  </ComboboxChips>
-                  <ComboboxContent className="top-2 left-4 border">
-                    <ComboboxEmpty>No items found.</ComboboxEmpty>
-                    <ComboboxList>
-                      {(item) => (
-                        <ComboboxItem key={item} value={item}>
-                          {item}
-                        </ComboboxItem>
-                      )}
-                    </ComboboxList>
-                  </ComboboxContent>
-                </Combobox>
-              </div>
-              <div className="w-full">
-                <Label className="mb-2" htmlFor="difficulties">
-                  Difficulties (0-10, 0 is all Pop Culture, 10 is open):
-                </Label>
-                <Slider
-                  id="difficulties"
-                  value={[
-                    difficulties[0] !== undefined ? difficulties[0] : 1,
-                    difficulties[difficulties.length - 1] !== undefined
-                      ? difficulties[difficulties.length - 1]!
-                      : 5,
-                  ]}
-                  onValueChange={(val: number[]) => {
-                    const [min, max] = val;
-                    const rangeArray = Array.from(
-                      { length: max! - min! + 1 },
-                      (_, i) => min! + i
-                    );
-                    setDifficulties(rangeArray);
-                  }}
-                  min={1}
-                  max={10}
-                  step={1}
-                  className="mx-auto w-full max-w-xs"
-                />
+                <Dialog>
+                  <DialogTrigger className="flex w-full justify-center">
+                    <div className="w-fit rounded-4xl bg-primary p-[1.5] px-3 text-primary-foreground hover:bg-primary/80">
+                      Configure Tossups
+                    </div>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle className="text-3xl">
+                        Configure Tossups
+                      </DialogTitle>
+                      <DialogDescription>
+                        Modify the categories and difficulties of the tossups
+                        you will receive.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <Tabs defaultValue="categories" className="w-[400px]">
+                      <TabsList>
+                        <TabsTrigger value="categories">Categories</TabsTrigger>
+                        <TabsTrigger value="difficulties">
+                          Difficulties
+                        </TabsTrigger>
+                        <TabsTrigger value="other">Other</TabsTrigger>
+                      </TabsList>
+                      <div className="p-2">
+                        <TabsContent value="categories">
+                          <h3>Enable and Disable Categories</h3>
+                          <Separator className="my-2" />
+                          <div className="m-2 flex flex-col gap-2">
+                            {catOptions.map((item) => (
+                              <Toggle
+                                key={item}
+                                aria-label="Toggle bookmark"
+                                size="sm"
+                                variant="outline"
+                                defaultPressed={categories.includes(item)}
+                                className="w-40"
+                                onPressedChange={(pressed) => {
+                                  if (pressed) {
+                                    setCategories((prev) => [...prev, item]);
+                                  } else {
+                                    setCategories((prev) =>
+                                      prev.filter((cat) => cat !== item)
+                                    );
+                                  }
+                                }}
+                              >
+                                {item}
+                              </Toggle>
+                            ))}
+                          </div>
+                        </TabsContent>
+                        <TabsContent value="difficulties">
+                          {Array.from({ length: 11 }, (_, i) => i).map(
+                            (diff) => (
+                              <div
+                                key={diff}
+                                className="flex justify-between gap-2 rounded-2xl p-2 even:bg-primary/10"
+                              >
+                                <Label htmlFor={`difficulty-${diff}`}>
+                                  {diff}: {diffLabels[diff]}
+                                </Label>
+                                <Checkbox
+                                  className="opacity-100!"
+                                  id={`difficulty-${diff}`}
+                                  checked={difficulties.includes(diff)}
+                                  onCheckedChange={(val) => {
+                                    setDifficulties((prev) => {
+                                      const newDifficulties = [...prev];
+                                      if (val) {
+                                        if (!newDifficulties.includes(diff)) {
+                                          newDifficulties.push(diff);
+                                        }
+                                      } else {
+                                        return newDifficulties.filter(
+                                          (d) => d !== diff
+                                        );
+                                      }
+                                      return newDifficulties;
+                                    });
+                                  }}
+                                />
+                              </div>
+                            )
+                          )}
+                        </TabsContent>
+                        <TabsContent value="other">Coming soon...</TabsContent>
+                      </div>
+                    </Tabs>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
           </motion.div>
