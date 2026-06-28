@@ -2,7 +2,7 @@
 
 import { Button } from "@workspace/ui/components/button";
 import { Pause, SkipForward, CogIcon, PlayIcon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { isTypingTarget } from "@/lib/utils";
 import {
   Tooltip,
@@ -39,6 +39,66 @@ import { Toggle } from "@workspace/ui/components/toggle";
 import { Separator } from "@workspace/ui/components/separator";
 import { Checkbox } from "@workspace/ui/components/checkbox";
 
+const subCatOptionsMap: Record<string, readonly string[]> = Object.freeze({
+  Science: Object.freeze(["Biology", "Chemistry", "Physics", "Other Science"]),
+  Literature: Object.freeze([
+    "American Literature",
+    "British Literature",
+    "Classical Literature",
+    "European Literature",
+    "World Literature",
+    "Other Literature",
+  ]),
+  History: Object.freeze([
+    "American History",
+    "Ancient History",
+    "European History",
+    "World History",
+    "Other History",
+  ]),
+  "Fine Arts": Object.freeze([
+    "Visual Fine Arts",
+    "Auditory Fine Arts",
+    "Other Fine Arts",
+  ]),
+  "Pop Culture": Object.freeze([
+    "Movies",
+    "Music",
+    "Sports",
+    "Television",
+    "Video Games",
+    "Other Pop Culture",
+  ]),
+});
+
+const altSubCatOptionsMap: Record<string, readonly string[]> = Object.freeze({
+  Science: Object.freeze([
+    "Math",
+    "Astronomy",
+    "Computer Science",
+    "Earth Science",
+    "Engineering",
+    "Misc Science",
+  ]),
+  Literature: Object.freeze([
+    "Drama",
+    "Long Fiction",
+    "Poetry",
+    "Short Fiction",
+    "Misc Literature",
+  ]),
+  "Fine Arts": Object.freeze([
+    "Architecture",
+    "Dance",
+    "Film",
+    "Jazz",
+    "Musicals",
+    "Opera",
+    "Photography",
+    "Misc Fine Arts",
+  ]),
+});
+
 export default function Singleplayer() {
   // https://www.qbreader.org/tools/api-docs/schemas/#tossup
 
@@ -66,6 +126,12 @@ export default function Singleplayer() {
   const [categories, setCategories] = useState<string[]>([]);
   const [difficulties, setDifficulties] = useState([0, 1, 2, 3, 4, 5]);
   const [score, setScore] = useState(0);
+  const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>(
+    []
+  );
+  const [selectedAltSubCategories, setSelectedAltSubCategories] = useState<
+    string[]
+  >([]);
 
   const isFinished = TUH > 0 && displayedWords.length === allWords.length;
 
@@ -84,8 +150,21 @@ export default function Singleplayer() {
     "Pop Culture",
   ];
 
-  // debug option
-  const forcePromptable = false;
+  const getSubCategoryOptions = (cats: string[]) =>
+    cats.flatMap((c) => subCatOptionsMap[c] ?? []);
+
+  const getAltSubCategoryOptions = (cats: string[]) =>
+    cats.flatMap((s) => altSubCatOptionsMap[s] ?? []);
+
+  const subCategoryOptions = useMemo(
+    () => getSubCategoryOptions(categories),
+    [categories]
+  );
+
+  const altSubCategoryOptions = useMemo(
+    () => getAltSubCategoryOptions(categories),
+    [categories]
+  );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function toReversed(arr: any[]) {
@@ -137,19 +216,25 @@ export default function Singleplayer() {
 
       const baseURL = new URL(endpoint);
 
-      if (forcePromptable) {
-        baseURL.searchParams.set("searchType", "answer");
-        baseURL.searchParams.set(
-          "queryString",
-          "Bronny James [or LeBron James Jr. or LeBron Raymone James Jr.; prompt on James; reject “LeBron James”]"
-        );
-      }
-
       baseURL.searchParams.set("questionType", "tossup");
       baseURL.searchParams.set("powermarkOnly", "true");
 
       if (categories && categories.length > 0) {
         baseURL.searchParams.set("categories", categories.join(","));
+      }
+
+      if (selectedSubCategories.length > 0) {
+        baseURL.searchParams.set(
+          "subcategories",
+          selectedSubCategories.join(",")
+        );
+      }
+
+      if (selectedAltSubCategories.length > 0) {
+        baseURL.searchParams.set(
+          "alternateSubcategories",
+          selectedAltSubCategories.join(",")
+        );
       }
 
       if (difficulties && difficulties.length > 0) {
@@ -159,9 +244,7 @@ export default function Singleplayer() {
       const res = await fetch(baseURL.toString());
 
       const json = await res.json();
-      const tu = !forcePromptable
-        ? json.tossups[0]
-        : json.tossups.questionArray[0];
+      const tu = json.tossups[0];
 
       const parts = tu.question_sanitized.split("(*)");
       const powerWords = parts[0]
@@ -193,7 +276,13 @@ export default function Singleplayer() {
         setIsFetchingTossup(false);
       }, 1);
     }
-  }, [categories, difficulties, forcePromptable, isFetchingTossup]);
+  }, [
+    categories,
+    difficulties,
+    isFetchingTossup,
+    selectedAltSubCategories,
+    selectedSubCategories,
+  ]);
 
   const buzz = useCallback(() => {
     if (TUH == 0 || displayedWords.length == 0 || tossupAnswered || isAnswering)
@@ -477,7 +566,7 @@ export default function Singleplayer() {
                       Configure Tossups
                     </div>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="w-fit! max-w-none!">
                     <DialogHeader>
                       <DialogTitle className="text-3xl">
                         Configure Tossups
@@ -487,40 +576,126 @@ export default function Singleplayer() {
                         you will receive.
                       </DialogDescription>
                     </DialogHeader>
-                    <Tabs defaultValue="categories" className="w-[400px]">
-                      <TabsList>
+                    <Tabs defaultValue="categories" className="w-full">
+                      <TabsList className="w-full">
                         <TabsTrigger value="categories">Categories</TabsTrigger>
                         <TabsTrigger value="difficulties">
                           Difficulties
                         </TabsTrigger>
                         <TabsTrigger value="other">Other</TabsTrigger>
                       </TabsList>
-                      <div className="p-2">
+                      <div className="h-[70vh] w-fit overflow-y-auto p-2">
                         <TabsContent value="categories">
                           <h3>Enable and Disable Categories</h3>
                           <Separator className="my-2" />
-                          <div className="m-2 flex flex-col gap-2">
-                            {catOptions.map((item) => (
-                              <Toggle
-                                key={item}
-                                aria-label="Toggle bookmark"
-                                size="sm"
-                                variant="outline"
-                                defaultPressed={categories.includes(item)}
-                                className="w-40"
-                                onPressedChange={(pressed) => {
-                                  if (pressed) {
-                                    setCategories((prev) => [...prev, item]);
-                                  } else {
-                                    setCategories((prev) =>
-                                      prev.filter((cat) => cat !== item)
-                                    );
-                                  }
-                                }}
-                              >
-                                {item}
-                              </Toggle>
-                            ))}
+                          <div className="m-2 flex justify-between gap-2">
+                            <div className="flex flex-col items-center gap-2">
+                              <h4 className="m-1 text-center text-lg font-semibold">
+                                Categories
+                              </h4>
+                              {catOptions.map((item) => (
+                                <Toggle
+                                  key={item}
+                                  aria-label="Toggle category"
+                                  size="sm"
+                                  variant="outline"
+                                  defaultPressed={categories.includes(item)}
+                                  className="w-40"
+                                  onPressedChange={(pressed) => {
+                                    setCategories((prev) => {
+                                      const next = pressed
+                                        ? [...prev, item]
+                                        : prev.filter((c) => c !== item);
+
+                                      const allowedSubCats = next.flatMap(
+                                        (c) => subCatOptionsMap[c] ?? []
+                                      );
+
+                                      const allowedAltSubCats = next.flatMap(
+                                        (c) => altSubCatOptionsMap[c] ?? []
+                                      );
+
+                                      setSelectedSubCategories((prev) => [
+                                        ...prev,
+                                        ...allowedSubCats,
+                                      ]);
+
+                                      setSelectedAltSubCategories((prev) => [
+                                        ...prev,
+                                        ...allowedAltSubCats,
+                                      ]);
+
+                                      return next;
+                                    });
+                                  }}
+                                >
+                                  {item}
+                                </Toggle>
+                              ))}
+                            </div>
+                            <div className="flex flex-col items-center gap-2">
+                              <h4 className="m-1 text-center text-lg font-semibold">
+                                Subcategories
+                              </h4>
+                              {subCategoryOptions.map((item) => (
+                                <Toggle
+                                  key={item}
+                                  aria-label="Toggle category"
+                                  size="sm"
+                                  variant="outline"
+                                  defaultPressed={selectedSubCategories.includes(
+                                    item
+                                  )}
+                                  className="w-40"
+                                  pressed={selectedSubCategories.includes(item)}
+                                  onPressedChange={(pressed) => {
+                                    setSelectedSubCategories((prev) => {
+                                      const next = pressed
+                                        ? [...prev, item]
+                                        : prev.filter((s) => s !== item);
+
+                                      return next;
+                                    });
+                                  }}
+                                >
+                                  {item}
+                                </Toggle>
+                              ))}
+                            </div>
+                            <div className="flex flex-col items-center gap-2">
+                              <h4 className="m-1 text-center text-lg font-semibold">
+                                Alternate Subcategories
+                              </h4>
+                              {altSubCategoryOptions.map((item) => (
+                                <Toggle
+                                  key={item}
+                                  aria-label="Toggle category"
+                                  size="sm"
+                                  variant="outline"
+                                  defaultPressed={selectedAltSubCategories.includes(
+                                    item
+                                  )}
+                                  className="w-40"
+                                  pressed={selectedAltSubCategories.includes(
+                                    item
+                                  )}
+                                  onPressedChange={(pressed) => {
+                                    if (pressed) {
+                                      setSelectedAltSubCategories((prev) => [
+                                        ...prev,
+                                        item,
+                                      ]);
+                                    } else {
+                                      setSelectedAltSubCategories((prev) =>
+                                        prev.filter((s) => s !== item)
+                                      );
+                                    }
+                                  }}
+                                >
+                                  {item}
+                                </Toggle>
+                              ))}
+                            </div>
                           </div>
                         </TabsContent>
                         <TabsContent value="difficulties">
