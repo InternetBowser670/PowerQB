@@ -3,12 +3,12 @@ import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { connectToDatabases } from "@/lib/mongodb";
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const { mainDb } = await connectToDatabases(false);
-
-const users = mainDb.collection("users");
-
 export async function POST(req: Request) {
+  // Create a MongoClient with a MongoClientOptions object to set the Stable API version
+  const { mainDb } = await connectToDatabases(false);
+
+  const users = mainDb.collection("users");
+
   const SIGNING_SECRET = process.env.SIGNING_SECRET;
 
   if (!SIGNING_SECRET) {
