@@ -616,13 +616,17 @@ export default function Singleplayer() {
                                       );
 
                                       setSelectedSubCategories((prev) => [
-                                        ...prev,
-                                        ...allowedSubCats,
+                                        ...new Set([
+                                          ...prev,
+                                          ...allowedSubCats,
+                                        ]),
                                       ]);
 
                                       setSelectedAltSubCategories((prev) => [
-                                        ...prev,
-                                        ...allowedAltSubCats,
+                                        ...new Set([
+                                          ...prev,
+                                          ...allowedAltSubCats,
+                                        ]),
                                       ]);
 
                                       return next;
