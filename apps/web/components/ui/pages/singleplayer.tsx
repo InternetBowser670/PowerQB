@@ -38,6 +38,7 @@ import {
 import { Toggle } from "@workspace/ui/components/toggle";
 import { Separator } from "@workspace/ui/components/separator";
 import { Checkbox } from "@workspace/ui/components/checkbox";
+import { Slider } from "@workspace/ui/components/slider";
 
 const subCatOptionsMap: Record<string, readonly string[]> = Object.freeze({
   Science: Object.freeze(["Biology", "Chemistry", "Physics", "Other Science"]),
@@ -100,6 +101,8 @@ const altSubCatOptionsMap: Record<string, readonly string[]> = Object.freeze({
 });
 
 export default function Singleplayer() {
+  const date = new Date();
+
   // https://www.qbreader.org/tools/api-docs/schemas/#tossup
 
   // standard abbv. for tossups heard
@@ -132,6 +135,10 @@ export default function Singleplayer() {
   const [selectedAltSubCategories, setSelectedAltSubCategories] = useState<
     string[]
   >([]);
+  const [yearRange, setYearRange] = useState<[number, number]>([
+    2010,
+    date.getFullYear(),
+  ]);
 
   const isFinished = TUH > 0 && displayedWords.length === allWords.length;
 
@@ -237,6 +244,22 @@ export default function Singleplayer() {
         );
       }
 
+      if (
+        yearRange.length > 0 &&
+        yearRange[0] >= 2010 &&
+        yearRange[0] <= new Date().getFullYear()
+      ) {
+        baseURL.searchParams.set("minYear", yearRange[0].toString());
+      }
+
+      if (
+        yearRange.length > 0 &&
+        yearRange[1] >= 2010 &&
+        yearRange[1] <= new Date().getFullYear()
+      ) {
+        baseURL.searchParams.set("maxYear", yearRange[1].toString());
+      }
+
       if (difficulties && difficulties.length > 0) {
         baseURL.searchParams.set("difficulties", difficulties.join(","));
       }
@@ -282,6 +305,7 @@ export default function Singleplayer() {
     isFetchingTossup,
     selectedAltSubCategories,
     selectedSubCategories,
+    yearRange,
   ]);
 
   const buzz = useCallback(() => {
@@ -584,7 +608,7 @@ export default function Singleplayer() {
                         </TabsTrigger>
                         <TabsTrigger value="other">Other</TabsTrigger>
                       </TabsList>
-                      <div className="h-[70vh] w-fit overflow-y-auto p-2">
+                      <div className="h-[70vh] w-full overflow-y-auto p-2">
                         <TabsContent value="categories">
                           <h3>Enable and Disable Categories</h3>
                           <Separator className="my-2" />
@@ -736,7 +760,24 @@ export default function Singleplayer() {
                             )
                           )}
                         </TabsContent>
-                        <TabsContent value="other">Coming soon...</TabsContent>
+                        <TabsContent value="other">
+                          <div className="h-full w-full">
+                            <Label className="mb-2" htmlFor="yearRange">
+                              Year range:  {yearRange[0]}-{yearRange[1]}
+                            </Label>
+                            <Slider
+                              id="yearRange"
+                              defaultValue={[2010, date.getFullYear()]}
+                              max={date.getFullYear()}
+                              onValueChange={(val: [number, number]) => {
+                                setYearRange(val);
+                              }}
+                              min={2000}
+                              step={1}
+                              className="mx-auto w-full"
+                            />
+                          </div>
+                        </TabsContent>
                       </div>
                     </Tabs>
                   </DialogContent>
