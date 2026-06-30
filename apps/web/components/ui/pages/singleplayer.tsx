@@ -508,7 +508,6 @@ export default function Singleplayer() {
                     <TooltipTrigger asChild>
                       <Button
                         onClick={() => {
-                          if (TUH === 0 || isPaused || isFinished)
                             fetchNewTossup();
                         }}
                       >
