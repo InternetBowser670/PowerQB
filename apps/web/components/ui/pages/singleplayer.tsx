@@ -508,7 +508,7 @@ export default function Singleplayer() {
                     <TooltipTrigger asChild>
                       <Button
                         onClick={() => {
-                            fetchNewTossup();
+                          fetchNewTossup();
                         }}
                       >
                         {TUH === 0 ? "Start" : "Next"}
@@ -630,27 +630,50 @@ export default function Singleplayer() {
                                         ? [...prev, item]
                                         : prev.filter((c) => c !== item);
 
-                                      const allowedSubCats = next.flatMap(
-                                        (c) => subCatOptionsMap[c] ?? []
-                                      );
+                                      const targetSubCats =
+                                        subCatOptionsMap[item] ?? [];
+                                      const targetAltSubCats =
+                                        altSubCatOptionsMap[item] ?? [];
 
-                                      const allowedAltSubCats = next.flatMap(
-                                        (c) => altSubCatOptionsMap[c] ?? []
-                                      );
+                                      if (pressed) {
+                                        setSelectedSubCategories((prevSub) => [
+                                          ...new Set([
+                                            ...prevSub,
+                                            ...targetSubCats,
+                                          ]),
+                                        ]);
+                                        setSelectedAltSubCategories(
+                                          (prevAlt) => [
+                                            ...new Set([
+                                              ...prevAlt,
+                                              ...targetAltSubCats,
+                                            ]),
+                                          ]
+                                        );
+                                      } else {
+                                        const remainingSubCats = next.flatMap(
+                                          (c) => subCatOptionsMap[c] ?? []
+                                        );
+                                        const remainingAltSubCats =
+                                          next.flatMap(
+                                            (c) => altSubCatOptionsMap[c] ?? []
+                                          );
 
-                                      setSelectedSubCategories((prev) => [
-                                        ...new Set([
-                                          ...prev,
-                                          ...allowedSubCats,
-                                        ]),
-                                      ]);
-
-                                      setSelectedAltSubCategories((prev) => [
-                                        ...new Set([
-                                          ...prev,
-                                          ...allowedAltSubCats,
-                                        ]),
-                                      ]);
+                                        setSelectedSubCategories((prevSub) =>
+                                          prevSub.filter(
+                                            (sub) =>
+                                              !targetSubCats.includes(sub) ||
+                                              remainingSubCats.includes(sub)
+                                          )
+                                        );
+                                        setSelectedAltSubCategories((prevAlt) =>
+                                          prevAlt.filter(
+                                            (alt) =>
+                                              !targetAltSubCats.includes(alt) ||
+                                              remainingAltSubCats.includes(alt)
+                                          )
+                                        );
+                                      }
 
                                       return next;
                                     });
@@ -762,7 +785,7 @@ export default function Singleplayer() {
                         <TabsContent value="other">
                           <div className="h-full w-full">
                             <Label className="mb-2" htmlFor="yearRange">
-                              Year range:  {yearRange[0]}-{yearRange[1]}
+                              Year range: {yearRange[0]}-{yearRange[1]}
                             </Label>
                             <Slider
                               id="yearRange"
