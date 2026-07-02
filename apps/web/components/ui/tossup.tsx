@@ -133,9 +133,9 @@ export default function TossupCard({
     </Card>
   ) : (
     <Card className="p-0 text-lg wrap-break-word">
-      <CardHeader className="--mb-(--card-spacing) h-fit! bg-accent px-4 py-1 wrap-break-word!">
+      <CardHeader className="--mb-(--card-spacing) h-fit! bg-accent px-0 py-1 wrap-break-word!">
         <Button
-          className="text-md cursor-pointer justify-start p-0! hover:bg-transparent!"
+          className="text-md cursor-pointer justify-start p-0! hover:bg-transparent! focus:outline-none px-4!"
           onClick={() => setExpanded(!expanded)}
           variant={"ghost"}
         >
